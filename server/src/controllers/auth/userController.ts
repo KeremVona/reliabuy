@@ -7,19 +7,10 @@ import {
   updateUser,
 } from "../../services/auth/userService";
 import jwtGenerator from "../../utils/jwtGenerator";
-
-interface RegisterRequestBody {
-  fullname: string;
-  email: string;
-  password: string;
-  city: string;
-  isBuyer: boolean;
-}
-
-interface LoginRequestBody {
-  email: string;
-  password: string;
-}
+import {
+  RegisterRequestBody,
+  LoginRequestBody,
+} from "src/interfaces/AuthInterfaces";
 
 interface GetIdRequestBody {
   id: string;
