@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import userRoutes from "./routes/auth/userRoutes";
+import propertyRoutes from "./routes/property/propertyRoutes";
 
 const app: Express = express();
 
@@ -11,6 +12,7 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/api/auth", userRoutes);
+app.use("/api/property", propertyRoutes);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
