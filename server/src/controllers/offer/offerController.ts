@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import {
   getOfferOwnership,
   getOffersByProperty,
+  getReceivedOffers,
   makeOffer,
   updateOfferStatus,
 } from "../../services/offer/offerService";
@@ -54,5 +55,27 @@ export const respondToOffer = async (req: Request, res: Response) => {
     res.json(updatedOffer);
   } catch (error) {
     res.status(500).json({ message: "Error updating offer status" });
+  }
+};
+
+export const getReceivedOffersHandler = async (req: Request, res: Response) => {
+  try {
+    const sellerId = req.user!.id;
+    const parsedSellerId = parseInt(sellerId);
+
+    const offers = await getReceivedOffers(parsedSellerId);
+
+    console.log(offers);
+
+    res.status(200).json({
+      success: true,
+      data: offers,
+    });
+  } catch (error) {
+    console.error("Error fetching received offers:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };

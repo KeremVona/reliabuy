@@ -20,6 +20,11 @@ export default function PropertyDetail() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // --- Offer State ---
+  const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+  const [offerAmount, setOfferAmount] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
     const fetchProperty = async () => {
       try {
@@ -51,6 +56,34 @@ export default function PropertyDetail() {
       fetchProperty();
     }
   }, [id]);
+
+  // --- Handle Offer Submission ---
+  const handleSendOffer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!offerAmount || Number(offerAmount) <= 0)
+      return alert("Please enter a valid amount");
+
+    setIsSubmitting(true);
+    try {
+      await axios.post(
+        "http://localhost:5000/api/offer",
+        {
+          amount: Number(offerAmount),
+          propertyId: Number(id),
+        },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      alert("Offer sent successfully!");
+      setIsOfferModalOpen(false);
+      setOfferAmount("");
+    } catch (err) {
+      console.error("Offer failed:", err);
+      alert("Failed to send offer. Try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // Handle the delete action
   const handleDelete = async () => {
@@ -192,8 +225,11 @@ export default function PropertyDetail() {
           {/* Conditional Rendering: Only show standard buttons if NOT the owner */}
           {!isOwner && (
             <div className="mt-10 pt-6 border-t border-gray-100 flex flex-col sm:flex-row gap-4">
-              <button className="flex-1 bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Contact Publisher
+              <button
+                onClick={() => setIsOfferModalOpen(true)}
+                className="flex-1 bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Make an Offer
               </button>
               <button className="flex-1 bg-white text-gray-700 border border-gray-300 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 Save for Later
@@ -220,6 +256,54 @@ export default function PropertyDetail() {
           )}
         </div>
       </div>
+      {/* --- OFFER MODAL --- */}
+      {isOfferModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-in fade-in zoom-in duration-200">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              Make an Offer
+            </h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Enter the amount you are willing to pay for{" "}
+              <span className="font-semibold">{property.title}</span>.
+            </p>
+
+            <form onSubmit={handleSendOffer}>
+              <div className="relative mb-6">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">
+                  $
+                </span>
+                <input
+                  autoFocus
+                  type="number"
+                  placeholder="Enter amount"
+                  className="w-full pl-8 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors text-lg font-semibold"
+                  value={offerAmount}
+                  onChange={(e) => setOfferAmount(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsOfferModalOpen(false)}
+                  className="flex-1 py-3 text-gray-600 font-medium hover:bg-gray-100 rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-all"
+                >
+                  {isSubmitting ? "Sending..." : "Submit Offer"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

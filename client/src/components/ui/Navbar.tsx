@@ -30,9 +30,9 @@ const Navbar = () => {
         <nav>
           <ul className="md:flex items-center justify-between text-base text-gray-700 pt-4 md:pt-0">
             <li>
-              <a className="md:p-4 py-3 px-0 block" href="#">
-                About Us
-              </a>
+              <Link to="/offers" className="md:p-4 py-3 px-0 block">
+                Offers
+              </Link>
             </li>
             <li>
               <Link className="md:p-4 py-3 px-0 block" to="/publish">

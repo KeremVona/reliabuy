@@ -28,7 +28,7 @@ export const getOffersByProperty = async (
       o.status, 
       o.property_id, 
       o.buyer_id, 
-      o.created_at,
+      o.made_at,
       u.fullname as buyer_name 
     FROM offers o
     JOIN users u ON o.buyer_id = u.id
@@ -71,4 +71,31 @@ export const getOfferOwnership = async (
   `;
   const { rows } = await pool.query(query, [offerId]);
   return rows.length > 0 ? rows[0] : null;
+};
+
+export const getReceivedOffers = async (sellerId: number) => {
+  console.log("sellerId: ", sellerId);
+
+  const query = `
+    SELECT 
+      o.id AS offer_id,
+      o.amount,
+      o.status,
+      o.made_at,
+      p.id AS property_id,
+      p.title AS property_title,
+      p.price AS asking_price,
+      u.fullname AS buyer_name,
+      u.email AS buyer_email
+    FROM offers o
+    JOIN properties p ON o.property_id = p.id
+    JOIN users u ON o.buyer_id = u.id
+    WHERE p.user_id = $1
+    ORDER BY o.made_at DESC;
+  `;
+
+  const { rows } = await pool.query(query, [sellerId]);
+  console.log("rows: ", rows);
+
+  return rows;
 };
