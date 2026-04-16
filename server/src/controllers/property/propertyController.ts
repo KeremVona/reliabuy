@@ -63,10 +63,18 @@ export async function updateProperty(
   res: Response,
 ): Promise<void> {
   try {
-    const id = parseInt(req.params.id as string, 10);
+    const { id } = req.params;
+    const sliced = id.slice(1);
+    const propertyId = parseInt(sliced as string, 10);
+
     const propertyData: Property = req.body;
 
-    const existingProperty = await propertyService.getPropertyById(id);
+    if (isNaN(propertyId)) {
+      res.status(400).json({ error: "Invalid Property ID provided" });
+      //return;
+    }
+
+    const existingProperty = await propertyService.getPropertyById(propertyId);
 
     if (!existingProperty) {
       res.status(404).json({ success: false, message: "Property not found" });
@@ -82,7 +90,7 @@ export async function updateProperty(
     }
 
     const updatedProperty = await propertyService.updateProperty(
-      id,
+      propertyId,
       propertyData,
     );
 

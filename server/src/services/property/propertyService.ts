@@ -20,7 +20,7 @@ export async function makeProperty(
 
 // READ: Get a single property by ID
 export async function getPropertyById(id: number): Promise<Property | null> {
-  console.log("DEBUG: Received ID in Service:", id);
+  // console.log("DEBUG: Received ID in Service:", id);
 
   if (Number.isNaN(id)) {
     console.error("CRITICAL: id is NaN in service!");

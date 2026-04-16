@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import MakeProperty from "./components/property/MakeProperty";
 import PropertyDetail from "./components/property/PropertyDetail";
+import EditProperty from "./components/property/EditProperty";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/property/:id" element={<PropertyDetail />} />
           <Route path="/publish" element={<MakeProperty />} />
+          <Route path="/property/edit/:id" element={<EditProperty />} />
         </Routes>
       </BrowserRouter>
     </>
