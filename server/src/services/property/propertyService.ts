@@ -1,11 +1,12 @@
-import { pool } from "src/db/db";
-import { Property } from "src/interfaces/IProperty";
+import { pool } from "../../db/db";
+import { Property } from "../../interfaces/IProperty";
 
 // Make: Make a new property
 export async function makeProperty(
   propertyData: Property,
 ): Promise<Property | null> {
   const { user_id, title, description, price, address } = propertyData;
+  console.log("user_id make service: ", user_id);
   const query = `
     INSERT INTO properties (user_id, title, description, price, address)
     VALUES ($1, $2, $3, $4, $5)
@@ -19,6 +20,12 @@ export async function makeProperty(
 
 // READ: Get a single property by ID
 export async function getPropertyById(id: number): Promise<Property | null> {
+  console.log("DEBUG: Received ID in Service:", id);
+
+  if (Number.isNaN(id)) {
+    console.error("CRITICAL: id is NaN in service!");
+    throw new Error("Property ID is Not a Number");
+  }
   const query = `SELECT * FROM properties WHERE id = $1;`;
   const result = await pool.query(query, [id]);
 
@@ -35,7 +42,7 @@ export async function getAllProperties(): Promise<Property[]> {
       p.price,
       p.address,
       u.id AS publisher_id,
-      u.name AS publisher_name,
+      u.fullname AS publisher_name,
       u.email AS publisher_email
     FROM properties p
     JOIN users u ON p.user_id = u.id

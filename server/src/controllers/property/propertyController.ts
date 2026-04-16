@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as propertyService from "../../services/property/propertyService";
-import { Property } from "src/interfaces/IProperty";
+import { Property } from "../../interfaces/IProperty";
 
 // MAKE
 export async function makeProperty(req: Request, res: Response): Promise<void> {
@@ -21,8 +21,15 @@ export async function makeProperty(req: Request, res: Response): Promise<void> {
 // READ
 export async function getProperty(req: Request, res: Response): Promise<void> {
   try {
-    const id = parseInt(req.params.id as string, 10);
-    const property = await propertyService.getPropertyById(id);
+    const { id } = req.params;
+    const sliced = id.slice(1);
+    const propertyId = parseInt(sliced as string, 10);
+
+    if (isNaN(propertyId)) {
+      res.status(400).json({ error: "Invalid Property ID provided" });
+      //return;
+    }
+    const property = await propertyService.getPropertyById(propertyId);
 
     if (!property) {
       res.status(404).json({ success: false, message: "Property not found" });
@@ -59,6 +66,21 @@ export async function updateProperty(
     const id = parseInt(req.params.id as string, 10);
     const propertyData: Property = req.body;
 
+    const existingProperty = await propertyService.getPropertyById(id);
+
+    if (!existingProperty) {
+      res.status(404).json({ success: false, message: "Property not found" });
+      return;
+    }
+
+    if (existingProperty.user_id !== parseInt(req.user!.id)) {
+      res.status(403).json({
+        success: false,
+        message: "Unauthorized: You can only edit your own properties.",
+      });
+      return;
+    }
+
     const updatedProperty = await propertyService.updateProperty(
       id,
       propertyData,
@@ -82,8 +104,34 @@ export async function deleteProperty(
   res: Response,
 ): Promise<void> {
   try {
-    const id = parseInt(req.params.id as string, 10);
-    const isDeleted = await propertyService.deleteProperty(id);
+    const { id } = req.params;
+    const sliced = id.slice(1);
+    const propertyId = parseInt(sliced as string, 10);
+
+    const existingProperty = await propertyService.getPropertyById(propertyId);
+    console.log("Attempting deletion of: ", existingProperty);
+    console.log(req.user);
+    console.log(
+      "Comparing: ",
+      existingProperty!.user_id,
+      parseInt(req.user!.id),
+    );
+
+    if (!existingProperty) {
+      res.status(404).json({ success: false, message: "Property not found" });
+      return;
+    }
+
+    if (existingProperty.user_id !== parseInt(req.user!.id)) {
+      res.status(403).json({
+        success: false,
+        message: "Unauthorized: You can only delete your own properties.",
+      });
+      return;
+    }
+
+    const isDeleted = await propertyService.deleteProperty(propertyId);
+    console.log(propertyId);
 
     if (!isDeleted) {
       res.status(404).json({ success: false, message: "Property not found" });
