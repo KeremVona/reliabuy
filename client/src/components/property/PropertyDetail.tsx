@@ -65,11 +65,12 @@ export default function PropertyDetail() {
 
     setIsSubmitting(true);
     try {
+      const idSend = Number(id!.slice(1));
       await axios.post(
         "http://localhost:5000/api/offer",
         {
           amount: Number(offerAmount),
-          propertyId: Number(id),
+          propertyId: Number(idSend),
         },
         { headers: { Authorization: `Bearer ${token}` } },
       );

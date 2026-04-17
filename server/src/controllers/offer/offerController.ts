@@ -19,6 +19,8 @@ export const makeOfferHandler = async (req: Request, res: Response) => {
       buyer_id: parsedBuyerId,
     });
 
+    console.log("newOffer: ", newOffer);
+
     res.status(201).json(newOffer);
   } catch (error) {
     res.status(500).json({ message: "Error making offer", error });
