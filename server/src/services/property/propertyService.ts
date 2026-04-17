@@ -5,17 +5,33 @@ import { Property } from "../../interfaces/IProperty";
 export async function makeProperty(
   propertyData: Property,
 ): Promise<Property | null> {
-  const { user_id, title, description, price, address } = propertyData;
-  console.log("user_id make service: ", user_id);
-  const query = `
+  const { user_id, title, description, price, address, images } = propertyData;
+  // console.log("user_id make service: ", user_id);
+
+  // 1. Insert the property
+  const propertyQuery = `
     INSERT INTO properties (user_id, title, description, price, address)
     VALUES ($1, $2, $3, $4, $5)
     RETURNING *;
   `;
-  const values = [user_id, title, description, price, address];
+  const propertyResult = await pool.query(propertyQuery, [
+    user_id,
+    title,
+    description,
+    price,
+    address,
+  ]);
+  const newProperty = propertyResult.rows[0];
 
-  const result = await pool.query(query, values);
-  return result.rows[0] || null;
+  // 2. If there are images, insert them into property_images
+  if (images && images.length > 0 && newProperty) {
+    const imageValues = images.map((_, i) => `($1, $${i + 2})`).join(",");
+    const imageQuery = `INSERT INTO property_images (property_id, url) VALUES ${imageValues}`;
+    await pool.query(imageQuery, [newProperty.id, ...images]);
+    newProperty.images = images;
+  }
+
+  return newProperty;
 }
 
 // READ: Get a single property by ID
@@ -26,9 +42,15 @@ export async function getPropertyById(id: number): Promise<Property | null> {
     console.error("CRITICAL: id is NaN in service!");
     throw new Error("Property ID is Not a Number");
   }
-  const query = `SELECT * FROM properties WHERE id = $1;`;
+  const query = `
+    SELECT p.*, 
+           COALESCE(json_agg(pi.url) FILTER (WHERE pi.url IS NOT NULL), '[]') as images
+    FROM properties p
+    LEFT JOIN property_images pi ON p.id = pi.property_id
+    WHERE p.id = $1
+    GROUP BY p.id;
+  `;
   const result = await pool.query(query, [id]);
-
   return result.rows[0] || null;
 }
 

@@ -6,6 +6,7 @@ import { Property } from "../../interfaces/IProperty";
 export async function makeProperty(req: Request, res: Response): Promise<void> {
   try {
     const propertyData: Property = req.body;
+    propertyData.user_id = parseInt(req.user!.id);
     const newProperty = await propertyService.makeProperty(propertyData);
 
     res.status(201).json({
