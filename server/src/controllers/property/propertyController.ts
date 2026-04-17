@@ -5,14 +5,23 @@ import { Property } from "../../interfaces/IProperty";
 // MAKE
 export async function makeProperty(req: Request, res: Response): Promise<void> {
   try {
-    const propertyData: Property = req.body;
-    propertyData.user_id = parseInt(req.user!.id);
+    // Multer puts files in req.files
+    const files = req.files as Express.Multer.File[];
+
+    // Construct the URLs/Paths to store in the DB
+    const imageUrls = files.map((file) => `/uploads/${file.filename}`);
+
+    // propertyData comes from req.body (strings only)
+    const propertyData = {
+      ...req.body,
+      user_id: parseInt(req.user!.id),
+      price: Number(req.body.price),
+      images: imageUrls, // Pass the local paths to the service
+    };
+
     const newProperty = await propertyService.makeProperty(propertyData);
 
-    res.status(201).json({
-      success: true,
-      data: newProperty,
-    });
+    res.status(201).json({ success: true, data: newProperty });
   } catch (error) {
     console.error("Error making property:", error);
     res.status(500).json({ success: false, message: "Internal server error" });

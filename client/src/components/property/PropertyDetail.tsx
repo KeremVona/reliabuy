@@ -20,25 +20,33 @@ export default function PropertyDetail() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // --- Image Gallery State ---
+  const [activeImage, setActiveImage] = useState<string | null>(null);
+
   // --- Offer State ---
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
   const [offerAmount, setOfferAmount] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const BASE_URL = "http://localhost:5000";
+
   useEffect(() => {
     const fetchProperty = async () => {
       try {
         // Fetch the single property by ID
-        const response = await axios.get(
-          `http://localhost:5000/api/property/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        const response = await axios.get(`${BASE_URL}/api/property/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        );
+        });
+        const data = response.data.data;
+        setProperty(data);
 
-        setProperty(response.data.data);
+        // Set the first image as active if it exists
+        if (data.images && data.images.length > 0) {
+          setActiveImage(data.images[0]);
+        }
+
         setLoading(false);
       } catch (err: any) {
         console.error(`Failed to fetch property ${id}:`, err);
@@ -177,6 +185,61 @@ export default function PropertyDetail() {
 
       {/* Property Detail Card */}
       <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+        {/* --- IMAGE GALLERY SECTION --- */}
+        <div className="bg-gray-100 border-b border-gray-200">
+          {activeImage ? (
+            <div className="flex flex-col">
+              {/* Main Image */}
+              <div className="relative h-64 sm:h-96 w-full overflow-hidden bg-black flex justify-center">
+                <img
+                  src={`${BASE_URL}${activeImage}`}
+                  alt={property.title}
+                  className="h-full object-contain"
+                />
+              </div>
+
+              {/* Thumbnails */}
+              {property.images.length > 1 && (
+                <div className="flex gap-2 p-4 overflow-x-auto bg-white border-t scrollbar-hide">
+                  {property.images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveImage(img)}
+                      className={`relative flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition-all ${
+                        activeImage === img
+                          ? "border-indigo-600 scale-105"
+                          : "border-transparent opacity-70 hover:opacity-100"
+                      }`}
+                    >
+                      <img
+                        src={`${BASE_URL}${img}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            // Placeholder if no images exist
+            <div className="h-64 flex flex-col items-center justify-center text-gray-400">
+              <svg
+                className="w-16 h-16 mb-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1"
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <span>No images available for this property</span>
+            </div>
+          )}
+        </div>
         {/* Header Section */}
         <div className="p-6 sm:p-10 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
           <div>

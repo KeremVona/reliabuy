@@ -3,8 +3,14 @@ import cors from "cors";
 import userRoutes from "./routes/auth/userRoutes";
 import propertyRoutes from "./routes/property/propertyRoutes";
 import offerRoutes from "./routes/offer/offerRoutes";
+import path from "path";
+import multer from "multer";
 
 export const app: Express = express();
+
+// Serve the 'uploads' folder as a static directory
+// This allows you to view images at http://localhost:5000/uploads/filename.jpg
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 const port = 5000;
 

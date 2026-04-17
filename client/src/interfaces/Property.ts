@@ -24,6 +24,7 @@ export interface PropertyFormData {
   price: number | "";
   address: string;
   user_id: number | "";
+  images: string[];
 }
 
 export interface PropertyDetailData {
@@ -33,4 +34,5 @@ export interface PropertyDetailData {
   description: string;
   price: string | number;
   address: string;
+  images: string[];
 }

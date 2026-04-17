@@ -14,6 +14,8 @@ export default function MakeProperty() {
     currentUserId = decoded.user.id;
   }
 
+  const [imageUrlInput, setImageUrlInput] = useState<string>("");
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   // 2. Form State
   const [formData, setFormData] = useState<PropertyFormData>({
     title: "",
@@ -21,8 +23,20 @@ export default function MakeProperty() {
     price: "",
     address: "",
     user_id: currentUserId,
+    images: [],
   });
 
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    setSelectedFiles((prev) => [...prev, ...files]);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setSelectedFiles((prev) => [...prev, ...Array.from(e.target.files!)]);
+    }
+  };
   // 3. UI Status State
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -47,33 +61,27 @@ export default function MakeProperty() {
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/api/property",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+    const data = new FormData();
+    data.append("title", formData.title);
+    data.append("description", formData.description);
+    data.append("price", String(formData.price));
+    data.append("address", formData.address);
 
-      if (response.data.success) {
-        setSuccessMessage("Property published successfully!");
-        // Reset form after success
-        setFormData({
-          title: "",
-          description: "",
-          price: "",
-          address: "",
-          user_id: 0,
-        });
-      }
+    // Append all files to the "images" key (Multer expects this name)
+    selectedFiles.forEach((file) => {
+      data.append("images", file);
+    });
+
+    try {
+      await axios.post("http://localhost:5000/api/property", data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data", // Tell browser this is a file upload
+        },
+      });
+      alert("Property published with images!");
     } catch (error) {
-      console.error("Error making property:", error);
-      setErrorMessage(
-        "Failed to make property. Please check your inputs and try again.",
-      );
+      console.error(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -193,6 +201,51 @@ export default function MakeProperty() {
                 placeholder="123 Main St, Springfield, IL 62701"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
               />
+            </div>
+
+            <div
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={onDrop}
+              className="mt-6 border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-indigo-500 transition-colors cursor-pointer"
+            >
+              <input
+                type="file"
+                multiple
+                onChange={handleFileSelect}
+                className="hidden"
+                id="fileInput"
+              />
+              <label htmlFor="fileInput" className="cursor-pointer">
+                <p className="text-gray-600">
+                  Drag & drop images here or <b>click to browse</b>
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Supports JPG, PNG, WEBP
+                </p>
+              </label>
+
+              {/* Previews */}
+              <div className="flex flex-wrap gap-4 mt-4">
+                {selectedFiles.map((file, i) => (
+                  <div key={i} className="relative w-20 h-20">
+                    <img
+                      src={URL.createObjectURL(file)}
+                      className="w-full h-full object-cover rounded-md"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedFiles((prev) =>
+                          prev.filter((_, idx) => idx !== i),
+                        )
+                      }
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Submit Button */}
