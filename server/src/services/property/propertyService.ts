@@ -107,7 +107,9 @@ export const searchProperties = async (searchTerm: string) => {
   // We wrap the term in % % to find matches anywhere in the string
   const query = `
     SELECT * FROM properties 
-    WHERE title ILIKE $1`;
+    WHERE title ILIKE $1 
+    OR address ILIKE $1
+  `;
 
   const values = [`%${searchTerm}%`];
   //console.log("values: ", values);
