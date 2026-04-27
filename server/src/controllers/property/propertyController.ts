@@ -127,13 +127,13 @@ export async function deleteProperty(
     const propertyId = parseInt(sliced as string, 10);
 
     const existingProperty = await propertyService.getPropertyById(propertyId);
-    console.log("Attempting deletion of: ", existingProperty);
-    console.log(req.user);
-    console.log(
-      "Comparing: ",
-      existingProperty!.user_id,
-      parseInt(req.user!.id),
-    );
+    //console.log("Attempting deletion of: ", existingProperty);
+    //console.log(req.user);
+    //console.log(
+    //  "Comparing: ",
+    //  existingProperty!.user_id,
+    //  parseInt(req.user!.id),
+    //);
 
     if (!existingProperty) {
       res.status(404).json({ success: false, message: "Property not found" });
@@ -149,7 +149,7 @@ export async function deleteProperty(
     }
 
     const isDeleted = await propertyService.deleteProperty(propertyId);
-    console.log(propertyId);
+    //console.log(propertyId);
 
     if (!isDeleted) {
       res.status(404).json({ success: false, message: "Property not found" });
@@ -168,15 +168,18 @@ export async function deleteProperty(
 export const handleSearch = async (req: Request, res: Response) => {
   try {
     const { q } = req.query;
+    //console.log("before return");
 
     if (!q) {
       return res.status(400).json({ message: "Search term is required" });
     }
 
     const properties = await propertyService.searchProperties(q as string);
+    //console.log("properties: ", properties);
 
     res.status(200).json({ success: true, data: properties });
   } catch (error) {
+    console.error(`Error searching property:`, error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };

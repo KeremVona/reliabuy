@@ -36,7 +36,7 @@ export async function makeProperty(
 
 // READ: Get a single property by ID
 export async function getPropertyById(id: number): Promise<Property | null> {
-  // console.log("DEBUG: Received ID in Service:", id);
+  console.log("DEBUG: Received ID in Service:", id);
 
   if (Number.isNaN(id)) {
     console.error("CRITICAL: id is NaN in service!");
@@ -107,13 +107,13 @@ export const searchProperties = async (searchTerm: string) => {
   // We wrap the term in % % to find matches anywhere in the string
   const query = `
     SELECT * FROM properties 
-    WHERE title ILIKE $1 
-    OR city ILIKE $1
-  `;
+    WHERE title ILIKE $1`;
 
   const values = [`%${searchTerm}%`];
+  //console.log("values: ", values);
 
   const result = await pool.query(query, values);
+  //console.log("result: ", result);
   return result.rows;
 };
 

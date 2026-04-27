@@ -5,6 +5,7 @@ import { upload } from "../../middleware/upload";
 
 const router = Router();
 
+router.get("/search", authorize, propertyController.handleSearch);
 router.post(
   "/",
   authorize,
@@ -15,6 +16,5 @@ router.get("/", authorize, propertyController.getAllProperties);
 router.get("/:id", authorize, propertyController.getProperty);
 router.put("/:id", authorize, propertyController.updateProperty);
 router.delete("/:id", authorize, propertyController.deleteProperty);
-router.get("/search", propertyController.handleSearch);
 
 export default router;
