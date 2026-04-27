@@ -43,14 +43,40 @@ const PropertySearch: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="relative">
+        <span className="absolute left-4 top-4 text-gray-400">🔍</span>
         <input
           type="text"
-          className="w-full p-4 pl-12 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="w-full p-4 pl-12 pr-12 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
           placeholder="Search by title or city..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <span className="absolute left-4 top-4 text-gray-400">🔍</span>
+        {/* Clear Search Button */}
+        {query && (
+          <button
+            onClick={() => {
+              setQuery("");
+              setResults([]);
+            }}
+            className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label="Clear search"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        )}{" "}
       </div>
 
       {loading && (

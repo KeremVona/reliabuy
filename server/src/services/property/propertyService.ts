@@ -119,6 +119,18 @@ export const searchProperties = async (searchTerm: string) => {
   return result.rows;
 };
 
+export const getUserProperties = async (userId: number) => {
+  // We use a parameterized query ($1) to safely pass the userId
+  const query = `
+    SELECT * FROM properties 
+    WHERE user_id = $1 
+    ORDER BY created_at DESC
+  `;
+
+  const result = await pool.query(query, [userId]);
+  return result.rows;
+};
+
 // NOTE: Disabled for now
 
 //export const findProperties = async (filters: PropertyFilters) => {

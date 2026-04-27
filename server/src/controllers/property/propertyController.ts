@@ -184,6 +184,35 @@ export const handleSearch = async (req: Request, res: Response) => {
   }
 };
 
+export const getMyProperties = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: User not found in request",
+      });
+    }
+
+    const properties = await propertyService.getUserProperties(
+      parseInt(userId),
+    );
+
+    res.status(200).json({
+      success: true,
+      count: properties.length,
+      data: properties,
+    });
+  } catch (error) {
+    console.error("Error fetching user listings:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
 // NOTE: Disabled for now
 
 //export const searchProperties = async (req: Request, res: Response) => {

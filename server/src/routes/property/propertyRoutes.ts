@@ -6,6 +6,7 @@ import { upload } from "../../middleware/upload";
 const router = Router();
 
 router.get("/search", authorize, propertyController.handleSearch);
+router.get("/my-listings", authorize, propertyController.getMyProperties);
 router.post(
   "/",
   authorize,
