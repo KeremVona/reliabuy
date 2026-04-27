@@ -9,6 +9,7 @@ import PropertyDetail from "./components/property/PropertyDetail";
 import EditProperty from "./components/property/EditProperty";
 
 import OffersDashboard from "./components/offer/OffersDashboard";
+import MyListings from "./components/property/MyListings";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/property/edit/:id" element={<EditProperty />} />
 
           <Route path="/offers" element={<OffersDashboard />} />
+          <Route path="/my-listings" element={<MyListings />} />
         </Routes>
       </BrowserRouter>
     </>

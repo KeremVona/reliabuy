@@ -123,8 +123,17 @@ export async function deleteProperty(
 ): Promise<void> {
   try {
     const { id } = req.params;
-    const sliced = id.slice(1);
-    const propertyId = parseInt(sliced as string, 10);
+
+    const propertyId = parseInt(id as string, 10);
+
+    // Check if the ID is actually a valid number before calling the service
+    if (isNaN(propertyId)) {
+      res
+        .status(400)
+        .json({ success: false, message: "Invalid property ID format" });
+      return;
+    }
+    console.log("propertyId: ", typeof propertyId, id);
 
     const existingProperty = await propertyService.getPropertyById(propertyId);
     //console.log("Attempting deletion of: ", existingProperty);
@@ -137,6 +146,14 @@ export async function deleteProperty(
 
     if (!existingProperty) {
       res.status(404).json({ success: false, message: "Property not found" });
+      return;
+    }
+
+    if (!req.user || existingProperty.user_id !== parseInt(req.user.id)) {
+      res.status(403).json({
+        success: false,
+        message: "Unauthorized: You can only delete your own properties.",
+      });
       return;
     }
 

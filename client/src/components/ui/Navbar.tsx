@@ -40,9 +40,9 @@ const Navbar = () => {
               </Link>
             </li>
             <li>
-              <a className="md:p-4 py-3 px-0 block" href="#">
-                Blog
-              </a>
+              <Link className="md:p-4 py-3 px-0 block" to="/my-listings">
+                My Listings
+              </Link>
             </li>
             <li>
               <a className="md:p-4 py-3 px-0 block md:mb-0 mb-2" href="#">
