@@ -164,3 +164,46 @@ export async function deleteProperty(
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 }
+
+export const handleSearch = async (req: Request, res: Response) => {
+  try {
+    const { q } = req.query;
+
+    if (!q) {
+      return res.status(400).json({ message: "Search term is required" });
+    }
+
+    const properties = await propertyService.searchProperties(q as string);
+
+    res.status(200).json({ success: true, data: properties });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// NOTE: Disabled for now
+
+//export const searchProperties = async (req: Request, res: Response) => {
+//  try {
+//    // Extract query parameters
+//    const { title, city, minPrice, maxPrice } = req.query;
+//
+//    // Convert strings to numbers where necessary
+//    const filters = {
+//      title: title as string,
+//      city: city as string,
+//      minPrice: minPrice ? parseFloat(minPrice as string) : undefined,
+//      maxPrice: maxPrice ? parseFloat(maxPrice as string) : undefined,
+//    };
+//
+//    const results = await propertyService.findProperties(filters);
+//
+//    res.status(200).json({
+//      success: true,
+//      count: results.length,
+//      data: results,
+//    });
+//  } catch (error) {
+//    res.status(500).json({ success: false, message: "Search failed" });
+//  }
+//};

@@ -1,5 +1,5 @@
 import { pool } from "../../db/db";
-import { Property } from "../../interfaces/IProperty";
+import { Property, PropertyFilters } from "../../interfaces/IProperty";
 
 // Make: Make a new property
 export async function makeProperty(
@@ -101,3 +101,50 @@ export async function deleteProperty(id: number): Promise<boolean> {
   // Returns true if a row was actually deleted, false otherwise
   return (result.rowCount ?? 0) > 0;
 }
+
+export const searchProperties = async (searchTerm: string) => {
+  // We use ILIKE for case-insensitive matching (PostgreSQL)
+  // We wrap the term in % % to find matches anywhere in the string
+  const query = `
+    SELECT * FROM properties 
+    WHERE title ILIKE $1 
+    OR city ILIKE $1
+  `;
+
+  const values = [`%${searchTerm}%`];
+
+  const result = await pool.query(query, values);
+  return result.rows;
+};
+
+// NOTE: Disabled for now
+
+//export const findProperties = async (filters: PropertyFilters) => {
+//  let query = "SELECT * FROM properties WHERE 1=1";
+//  const values: any[] = [];
+//  let placeholderIdx = 1;
+//
+//  // Partial search (ILIKE is Postgres-specific for case-insensitive)
+//  if (filters.title) {
+//    query += ` AND title ILIKE $${placeholderIdx++}`;
+//    values.push(`%${filters.title}%`);
+//  }
+//
+//  if (filters.city) {
+//    query += ` AND city = $${placeholderIdx++}`;
+//    values.push(filters.city);
+//  }
+//
+//  if (filters.minPrice !== undefined) {
+//    query += ` AND price >= $${placeholderIdx++}`;
+//    values.push(filters.minPrice);
+//  }
+//
+//  if (filters.maxPrice !== undefined) {
+//    query += ` AND price <= $${placeholderIdx++}`;
+//    values.push(filters.maxPrice);
+//  }
+//
+//  const result = await pool.query(query, values);
+//  return result.rows;
+//};

@@ -7,3 +7,10 @@ export interface Property {
   address: string;
   images?: string[];
 }
+
+export interface PropertyFilters {
+  title?: string;
+  city?: string;
+  minPrice?: number;
+  maxPrice?: number;
+}
