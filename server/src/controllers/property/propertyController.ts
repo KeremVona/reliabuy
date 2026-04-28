@@ -230,6 +230,73 @@ export const getMyProperties = async (req: Request, res: Response) => {
   }
 };
 
+export const saveProperty = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const userId = parseInt(req.user!.id, 10);
+    const propertyId = parseInt(req.params.id as string, 10);
+
+    if (isNaN(propertyId)) {
+      res.status(400).json({ success: false, message: "Invalid property ID" });
+      return;
+    }
+
+    await propertyService.addFavorite(userId, propertyId);
+
+    res
+      .status(200)
+      .json({ success: true, message: "Property saved to favorites" });
+  } catch (error) {
+    console.error("Error saving property:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export const unsaveProperty = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const userId = parseInt(req.user!.id, 10);
+    const propertyId = parseInt(req.params.id as string, 10);
+
+    if (isNaN(propertyId)) {
+      res.status(400).json({ success: false, message: "Invalid property ID" });
+      return;
+    }
+
+    await propertyService.removeFavorite(userId, propertyId);
+
+    res
+      .status(200)
+      .json({ success: true, message: "Property removed from favorites" });
+  } catch (error) {
+    console.error("Error removing saved property:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export const getMySavedProperties = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const userId = parseInt(req.user!.id, 10);
+    const savedProperties = await propertyService.getSavedProperties(userId);
+
+    res.status(200).json({
+      success: true,
+      count: savedProperties.length,
+      data: savedProperties,
+    });
+  } catch (error) {
+    console.error("Error fetching saved properties:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 // NOTE: Disabled for now
 
 //export const searchProperties = async (req: Request, res: Response) => {

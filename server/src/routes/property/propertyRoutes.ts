@@ -7,6 +7,7 @@ const router = Router();
 
 router.get("/search", authorize, propertyController.handleSearch);
 router.get("/my-listings", authorize, propertyController.getMyProperties);
+router.get("/saved", authorize, propertyController.getMySavedProperties);
 router.post(
   "/",
   authorize,

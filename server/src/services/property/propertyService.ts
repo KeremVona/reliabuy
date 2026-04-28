@@ -130,6 +130,41 @@ export const getUserProperties = async (userId: number) => {
   return result.rows;
 };
 
+// Add to favorites
+export const addFavorite = async (userId: number, propertyId: number) => {
+  const query = `
+    INSERT INTO favorites (user_id, property_id) 
+    VALUES ($1, $2) 
+    ON CONFLICT DO NOTHING
+    RETURNING *;
+  `;
+  const result = await pool.query(query, [userId, propertyId]);
+  return result.rows[0];
+};
+
+// Remove from favorites
+export const removeFavorite = async (userId: number, propertyId: number) => {
+  const query = `
+    DELETE FROM favorites 
+    WHERE user_id = $1 AND property_id = $2
+  `;
+  const result = await pool.query(query, [userId, propertyId]);
+  return result.rowCount !== null && result.rowCount > 0;
+};
+
+// Get all properties saved by a specific user
+export const getSavedProperties = async (userId: number) => {
+  const query = `
+    SELECT p.*, f.created_at as favorited_at
+    FROM properties p
+    INNER JOIN favorites f ON p.id = f.property_id
+    WHERE f.user_id = $1
+    ORDER BY f.created_at DESC
+  `;
+  const result = await pool.query(query, [userId]);
+  return result.rows;
+};
+
 // NOTE: Disabled for now
 
 //export const findProperties = async (filters: PropertyFilters) => {
