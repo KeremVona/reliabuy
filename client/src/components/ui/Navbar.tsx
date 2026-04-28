@@ -1,6 +1,11 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const handleClick = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
   return (
     <header className="lg:px-16 px-4 bg-white flex flex-wrap items-center py-4 shadow-md">
       <div className="flex-1 flex justify-between items-center">
@@ -45,9 +50,12 @@ const Navbar = () => {
               </Link>
             </li>
             <li>
-              <a className="md:p-4 py-3 px-0 block md:mb-0 mb-2" href="#">
-                Contact Us
-              </a>
+              <button
+                onClick={handleClick}
+                className="md:p-4 py-3 px-0 block md:mb-0 mb-2"
+              >
+                Log Out
+              </button>
             </li>
           </ul>
         </nav>
