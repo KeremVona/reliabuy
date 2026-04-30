@@ -35,6 +35,11 @@ const Navbar = () => {
         <nav>
           <ul className="md:flex items-center justify-between text-base text-gray-700 pt-4 md:pt-0">
             <li>
+              <Link to="/saved" className="md:p-4 py-3 px-0 block">
+                Saved Properties
+              </Link>
+            </li>
+            <li>
               <Link to="/offers" className="md:p-4 py-3 px-0 block">
                 Offers
               </Link>

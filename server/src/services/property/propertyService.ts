@@ -155,13 +155,17 @@ export const removeFavorite = async (userId: number, propertyId: number) => {
 // Get all properties saved by a specific user
 export const getSavedProperties = async (userId: number) => {
   const query = `
-    SELECT p.*, f.created_at as favorited_at
+    SELECT p.*, f.made_at as favorited_at
     FROM properties p
     INNER JOIN favorites f ON p.id = f.property_id
     WHERE f.user_id = $1
-    ORDER BY f.created_at DESC
+    ORDER BY f.made_at DESC
   `;
   const result = await pool.query(query, [userId]);
+
+  console.log("----------------");
+  console.log(result.rows);
+  console.log("----------------");
   return result.rows;
 };
 

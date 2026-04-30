@@ -19,4 +19,7 @@ router.get("/:id", authorize, propertyController.getProperty);
 router.put("/:id", authorize, propertyController.updateProperty);
 router.delete("/:id", authorize, propertyController.deleteProperty);
 
+router.post("/:id/favorite", authorize, propertyController.saveProperty);
+router.delete("/:id/favorite", authorize, propertyController.unsaveProperty);
+
 export default router;

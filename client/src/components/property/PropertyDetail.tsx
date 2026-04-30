@@ -28,29 +28,42 @@ export default function PropertyDetail() {
   const [offerAmount, setOfferAmount] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // --- Favorites / Saved State ---
+  const [isSaved, setIsSaved] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+
   const BASE_URL = "http://localhost:5000";
 
   useEffect(() => {
-    const fetchProperty = async () => {
+    const fetchPropertyAndStatus = async () => {
       try {
-        // Fetch the single property by ID
-        const response = await axios.get(`${BASE_URL}/api/property/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        // 1. Fetch the single property by ID
+        const propertyRes = await axios.get(`${BASE_URL}/api/property/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        const data = response.data.data;
-        setProperty(data);
+        const propertyData = propertyRes.data.data;
+        setProperty(propertyData);
 
-        // Set the first image as active if it exists
-        if (data.images && data.images.length > 0) {
-          setActiveImage(data.images[0]);
+        if (propertyData.images && propertyData.images.length > 0) {
+          setActiveImage(propertyData.images[0]);
+        }
+
+        // 2. Fetch user's saved properties to see if this one is already saved
+        if (token) {
+          const savedRes = await axios.get(`${BASE_URL}/api/property/saved`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          // Check if current property ID exists in the user's saved list
+          const isFavorited = savedRes.data.data.some(
+            (savedItem: any) => savedItem.id === propertyData.id,
+          );
+          setIsSaved(isFavorited);
         }
 
         setLoading(false);
       } catch (err: any) {
         console.error(`Failed to fetch property ${id}:`, err);
-        // Handle 404s specifically
         if (err.response && err.response.status === 404) {
           setError("Property not found.");
         } else {
@@ -61,10 +74,39 @@ export default function PropertyDetail() {
     };
 
     if (id) {
-      fetchProperty();
+      fetchPropertyAndStatus();
     }
-  }, [id]);
+  }, [id, token]);
 
+  // --- Handle Save / Unsave ---
+  const handleToggleSave = async () => {
+    setIsSaving(true);
+    try {
+      const idSend = Number(id!.slice(1));
+      if (isSaved) {
+        // Unsave
+        await axios.delete(`${BASE_URL}/api/property/${idSend}/favorite`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setIsSaved(false);
+      } else {
+        // Save (Note: POST requests need an empty body {} as the second argument if passing headers third)
+        await axios.post(
+          `${BASE_URL}/api/property/${idSend}/favorite`,
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        setIsSaved(true);
+      }
+    } catch (err) {
+      console.error("Failed to toggle favorite:", err);
+      alert("Could not update saved properties. Try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
   // --- Handle Offer Submission ---
   const handleSendOffer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +115,7 @@ export default function PropertyDetail() {
 
     setIsSubmitting(true);
     try {
+      // NOTE:  const idSend = Number(id);
       const idSend = Number(id!.slice(1));
       await axios.post(
         "http://localhost:5000/api/offer",
@@ -162,7 +205,7 @@ export default function PropertyDetail() {
   // Main UI Render
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-      {/* Back Button */}
+      {/**/}
       <button
         onClick={() => navigate(-1)}
         className="mb-6 flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
@@ -295,26 +338,44 @@ export default function PropertyDetail() {
               >
                 Make an Offer
               </button>
-              <button className="flex-1 bg-white text-gray-700 border border-gray-300 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Save for Later
-              </button>
-            </div>
-          )}
 
-          {/* Conditional Rendering: Only show Management buttons if IS the owner */}
-          {isOwner && (
-            <div className="mt-10 pt-6 border-t border-gray-100 flex flex-col sm:flex-row gap-4">
+              {/* The Favorites Toggle Button */}
               <button
-                onClick={() => navigate(`/property/edit/${id}`)}
-                className="flex-1 bg-amber-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-amber-600 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+                onClick={handleToggleSave}
+                disabled={isSaving}
+                className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                  isSaved
+                    ? "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 focus:ring-red-500"
+                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-indigo-500"
+                } disabled:opacity-50`}
               >
-                Edit Property
-              </button>
-              <button
-                onClick={handleDelete}
-                className="flex-1 bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                Delete Property
+                {isSaved ? (
+                  <>
+                    <svg className="w-5 h-5 fill-current" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Saved to Favorites
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-5 h-5 stroke-current fill-transparent"
+                      viewBox="0 0 24 24"
+                      strokeWidth="2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                      />
+                    </svg>
+                    Save for Later
+                  </>
+                )}
               </button>
             </div>
           )}

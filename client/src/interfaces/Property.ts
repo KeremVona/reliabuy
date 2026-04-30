@@ -36,3 +36,12 @@ export interface PropertyDetailData {
   address: string;
   images: string[];
 }
+
+export interface SavedProperty {
+  id: number;
+  title: string;
+  address: string;
+  price: string | number;
+  images?: string[];
+  favorited_at?: string; // Optional: If you want to show when they saved it
+}
