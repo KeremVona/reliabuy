@@ -20,7 +20,7 @@ router.post(
   upload.array("images", 10),
   propertyController.makeProperty,
 );
-router.get("/", authorize, propertyController.getAllProperties);
+router.get("/", propertyController.getAllProperties);
 router.get("/:id", authorize, propertyController.getProperty);
 router.put("/:id", authorize, propertyController.updateProperty);
 router.delete("/:id", authorize, propertyController.deleteProperty);
