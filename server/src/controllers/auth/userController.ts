@@ -1,16 +1,13 @@
 import { type Request, type Response } from "express";
+import { z } from "zod";
 import {
-  registerUser,
-  loginUser,
   deleteUser,
   getUserById,
+  loginUser,
+  registerUser,
   updateUser,
 } from "../../services/auth/userService";
 import jwtGenerator from "../../utils/jwtGenerator";
-import {
-  RegisterRequestBody,
-  LoginRequestBody,
-} from "src/interfaces/AuthInterfaces";
 
 interface GetIdRequestBody {
   id: string;
@@ -20,65 +17,96 @@ interface UserIdParams {
   userId: string;
 }
 
-export const registerHandler = async (
-  req: Request<{}, {}, RegisterRequestBody>,
-  res: Response,
-) => {
-  // Extract all fields matching our PostgreSQL User interface
-  const { fullname, email, password, city, isBuyer } = req.body;
-  console.log("register req", req.body);
+const registerSchema = z.object({
+  fullname: z.string().min(2, "Full name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  city: z.string().min(1, "City is required"),
+  isBuyer: z.boolean(),
+});
 
+const loginSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(1, "Password is required"),
+});
+
+export const registerHandler = async (
+  req: Request<{}, {}, z.infer<typeof registerSchema>>,
+  res: Response,
+): Promise<Response | void> => {
   try {
-    // The service handles password hashing and database insertion
-    const newUser = await registerUser({
-      fullname,
-      email,
-      password,
-      city,
-      isBuyer,
-    });
+    // Validate incoming request body
+    const validatedData = registerSchema.parse(req.body);
+
+    const newUser = await registerUser(validatedData);
 
     if (!newUser) {
-      return res.status(400).json("Registration failed");
+      return res
+        .status(400)
+        .json({ error: "Registration failed. Please try again." });
     }
 
-    // Pass the user ID (converted to string if your JWT utility expects it) and fullname
     const jwtToken = jwtGenerator(String(newUser.id), newUser.fullname);
 
-    return res.json({ jwtToken });
-  } catch (err: any) {
+    // Standardized success response
+    return res.status(201).json({
+      message: "User registered successfully",
+      jwtToken,
+    });
+  } catch (err: unknown) {
     console.error("Server error - registerHandler:", err);
 
-    // 23505 is the PostgreSQL error code for unique constraint violation
-    if (err.code === "23505") {
-      return res.status(409).send("User already exists");
+    // Handle Zod validation errors cleanly
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({
+        error: "Validation failed",
+        details: err.issues.map((e: z.ZodIssue) => e.message),
+      });
     }
 
-    return res.status(500).send("Server error");
+    // Safely check for Postgres unique constraint violation
+    const dbError = err as { code?: string };
+    if (dbError.code === "23505") {
+      return res
+        .status(409)
+        .json({ error: "A user with this email already exists." });
+    }
+
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
 export const loginHandler = async (
-  req: Request<{}, {}, LoginRequestBody>,
+  req: Request<{}, {}, z.infer<typeof loginSchema>>,
   res: Response,
-) => {
-  const { email, password } = req.body;
-
+): Promise<Response | void> => {
   try {
-    // The service handles fetching the user AND comparing the bcrypt password
+    // Validate incoming request body
+    const { email, password } = loginSchema.parse(req.body);
+
     const user = await loginUser(email, password);
 
     if (!user) {
-      // Return a generic error for both wrong email or wrong password for better security
-      return res.status(401).json("Invalid email or password");
+      // Consistent JSON error response
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
     const jwtToken = jwtGenerator(String(user.id), user.fullname);
 
-    return res.json({ jwtToken });
-  } catch (err) {
+    // Consistent success response
+    return res.status(200).json({ jwtToken });
+  } catch (err: unknown) {
     console.error("Server error - loginHandler:", err);
-    return res.status(500).send("Server error");
+
+    // Handle Zod validation errors cleanly
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({
+        error: "Validation failed",
+        details: err.issues.map((e: z.ZodIssue) => e.message),
+      });
+    }
+
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 

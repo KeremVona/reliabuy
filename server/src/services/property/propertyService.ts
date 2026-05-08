@@ -1,5 +1,9 @@
 import { pool } from "../../db/db";
-import { Property, PropertyFilters } from "../../interfaces/IProperty";
+import { Property } from "../../interfaces/IProperty";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import fs from "fs";
+
+const genAI = new GoogleGenerativeAI(process.env.API_KEY || "");
 
 // Make: Make a new property
 export async function makeProperty(
@@ -167,6 +171,46 @@ export const getSavedProperties = async (userId: number) => {
   console.log(result.rows);
   console.log("----------------");
   return result.rows;
+};
+
+export const generatePropertyDescription = async (
+  files: Express.Multer.File[],
+): Promise<string> => {
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+  const imageParts = files.map((file) => {
+    // 2. Safely get the base64 string whether Multer is using memory or disk storage
+    const base64Data = file.buffer
+      ? file.buffer.toString("base64")
+      : fs.readFileSync(file.path).toString("base64");
+
+    return {
+      inlineData: {
+        data: base64Data,
+        mimeType: file.mimetype,
+      },
+    };
+  });
+
+  const prompt = `
+    Analyze these images of a real estate property. 
+    Write a professional, engaging, and concise property description (around 100-150 words).
+    Highlight key features like flooring, lighting, kitchen style, or any unique architectural details visible.
+    Do not mention the image quality, focus only on the property features.
+  `;
+
+  const result = await model.generateContent([prompt, ...imageParts]);
+  const response = await result.response;
+
+  // Optional: If you don't want to keep these temporary AI-scan images on your disk forever,
+  // you can delete them after Gemini is done analyzing them:
+  /*
+  files.forEach(file => {
+    if (file.path) fs.unlinkSync(file.path);
+  });
+  */
+
+  return response.text();
 };
 
 // NOTE: Disabled for now

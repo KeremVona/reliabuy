@@ -16,6 +16,7 @@ export default function MakeProperty() {
 
   const [imageUrlInput, setImageUrlInput] = useState<string>("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
   // 2. Form State
   const [formData, setFormData] = useState<PropertyFormData>({
     title: "",
@@ -41,6 +42,50 @@ export default function MakeProperty() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // State for AI generation
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+
+  // Handle AI Description Generation
+  const handleGenerateDescription = async () => {
+    if (selectedFiles.length === 0) {
+      alert(
+        "Please select some images first so the AI has something to analyze!",
+      );
+      return;
+    }
+
+    setIsGenerating(true);
+
+    const data = new FormData();
+    selectedFiles.forEach((file) => {
+      data.append("images", file);
+    });
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/property/generate-description",
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+
+      // Update the description field specifically, preserving the rest of the form
+      setFormData((prev) => ({
+        ...prev,
+        description: response.data.description,
+      }));
+    } catch (error) {
+      console.error("AI Generation failed", error);
+      alert("Failed to generate description. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   // 4. Handle input changes dynamically
   const handleChange = (
@@ -141,12 +186,52 @@ export default function MakeProperty() {
 
             {/* Description Textarea */}
             <div>
-              <label
-                htmlFor="description"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Description
-              </label>
+              <div className="flex justify-between items-center mb-1">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Description
+                </label>
+                <button
+                  type="button"
+                  onClick={handleGenerateDescription}
+                  disabled={isGenerating || selectedFiles.length === 0}
+                  className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-md shadow-sm text-white ${
+                    isGenerating || selectedFiles.length === 0
+                      ? "bg-purple-300 cursor-not-allowed"
+                      : "bg-purple-600 hover:bg-purple-700"
+                  } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors`}
+                >
+                  {isGenerating ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-3 w-3 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Scanning...
+                    </>
+                  ) : (
+                    "✨ Auto-Write with AI"
+                  )}
+                </button>
+              </div>
               <textarea
                 name="description"
                 id="description"

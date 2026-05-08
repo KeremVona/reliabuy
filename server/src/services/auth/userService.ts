@@ -2,19 +2,24 @@ import bcrypt from "bcrypt";
 import { pool } from "../../db/db";
 import { User } from "../../interfaces/IUser";
 
+export type MakeUserDTO = Omit<User, "id">;
+
+export type SafeUser = Omit<User, "password">;
+
 // Database operations
-export async function registerUser(userData: User): Promise<User | null> {
+export async function registerUser(
+  userData: MakeUserDTO,
+): Promise<SafeUser | null> {
   const { fullname, email, password, city, isBuyer } = userData;
 
+  // Validation is now handled by Zod in the controller, but a DB-level sanity check is fine
   if (!password) {
     throw new Error("Password is required for registration.");
   }
 
-  // Hash the password before saving it to the database (Cost factor: 10)
-  const saltRounds = 10;
+  // Cost factor: 12 is the modern recommended minimum
+  const saltRounds = 12;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-  console.log("user service, ", hashedPassword, password);
 
   const query = `
     INSERT INTO users (fullname, email, password, city, "isBuyer")
@@ -26,13 +31,12 @@ export async function registerUser(userData: User): Promise<User | null> {
 
   try {
     const result = await pool.query(query, values);
-    return result.rows[0]; // Returns the newly made user (without password)
-  } catch (error: any) {
-    // Handle unique constraint violation for emails (PostgreSQL error code 23505)
-    if (error.code === "23505") {
-      throw new Error("A user with this email already exists.");
-    }
-    console.error("Error registering user:", error);
+    return result.rows[0];
+  } catch (error: unknown) {
+    // We log the raw database error here for debugging purposes
+    console.error("Database error in registerUser:", error);
+
+    // Throw the RAW error so the controller can read error.code === '23505'
     throw error;
   }
 }
@@ -40,7 +44,7 @@ export async function registerUser(userData: User): Promise<User | null> {
 export async function loginUser(
   email: string,
   passwordAttempt: string,
-): Promise<User | null> {
+): Promise<SafeUser | null> {
   const query = `
     SELECT id, fullname, email, password, city, "isBuyer"
     FROM users
@@ -51,27 +55,29 @@ export async function loginUser(
     const result = await pool.query(query, [email]);
     const user = result.rows[0];
 
-    // If no user is found with that email
+    // 1. If no user is found with that email
     if (!user) {
       return null;
     }
 
-    // Compare the provided password with the stored hash
+    // 2. Compare the provided password with the stored hash
     const isPasswordValid = await bcrypt.compare(
       passwordAttempt,
       user.password,
     );
 
-    if (isPasswordValid) {
-      // Remove the password from the returned object for security
-      delete user.password;
-      return user;
-    } else {
-      // Password does not match
+    if (!isPasswordValid) {
       return null;
     }
-  } catch (error) {
-    console.error("Error logging in:", error);
+
+    // 3. SAFELY remove the password using destructuring
+    // This avoids the V8 performance hit of 'delete' and keeps TypeScript happy
+    const { password, ...safeUser } = user;
+
+    return safeUser;
+  } catch (error: unknown) {
+    // Keep internal server/database errors out of the frontend response
+    console.error("Database error in loginUser:", error);
     throw error;
   }
 }

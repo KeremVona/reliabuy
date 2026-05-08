@@ -297,6 +297,24 @@ export const getMySavedProperties = async (
   }
 };
 
+export const getAIDescription = async (req: any, res: any) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "No images provided for scanning." });
+    }
+
+    const description = await propertyService.generatePropertyDescription(
+      req.files as Express.Multer.File[],
+    );
+    res.status(200).json({ description });
+  } catch (error) {
+    console.error("Gemini Error:", error);
+    res.status(500).json({ error: "Failed to generate description with AI." });
+  }
+};
+
 // NOTE: Disabled for now
 
 //export const searchProperties = async (req: Request, res: Response) => {

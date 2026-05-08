@@ -5,6 +5,12 @@ import { upload } from "../../middleware/upload";
 
 const router = Router();
 
+router.post(
+  "/generate-description",
+  authorize,
+  upload.array("images", 10),
+  propertyController.getAIDescription,
+);
 router.get("/search", authorize, propertyController.handleSearch);
 router.get("/my-listings", authorize, propertyController.getMyProperties);
 router.get("/saved", authorize, propertyController.getMySavedProperties);

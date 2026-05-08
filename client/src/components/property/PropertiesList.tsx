@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
 import axios from "axios";
-import type { PropertyData } from "../../interfaces/Property";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
+import type { PropertyData } from "../../interfaces/Property";
 
 // 1. Define the TypeScript interface based on our backend JOIN query
 
