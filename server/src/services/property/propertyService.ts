@@ -69,7 +69,14 @@ export async function getAllProperties(): Promise<Property[]> {
       p.address,
       u.id AS publisher_id,
       u.fullname AS publisher_name,
-      u.email AS publisher_email
+      u.email AS publisher_email,
+      (
+        SELECT url 
+        FROM property_images pi 
+        WHERE pi.property_id = p.id 
+        ORDER BY pi.id ASC 
+        LIMIT 1
+      ) AS image_url
     FROM properties p
     JOIN users u ON p.user_id = u.id
     ORDER BY p.id DESC;

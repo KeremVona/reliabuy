@@ -1,8 +1,9 @@
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+import { ArrowLeft, DollarSign, Heart, ImageOff, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { PropertyDetailData } from "../../interfaces/Property";
-import { jwtDecode } from "jwt-decode";
 
 // 1. Define the TypeScript interface
 // Note: This matches the basic Property interface from your backend.
@@ -204,59 +205,48 @@ export default function PropertyDetail() {
   }
   // Main UI Render
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-      {/**/}
+    <div className="max-w-5xl mx-auto px-4 py-12 sm:px-6 lg:px-8 font-sans">
+      {/* Back Navigation */}
       <button
         onClick={() => navigate(-1)}
-        className="mb-6 flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+        className="mb-8 flex items-center text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors group"
       >
-        <svg
-          className="mr-2 w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M10 19l-7-7m0 0l7-7m-7 7h18"
-          />
-        </svg>
+        <ArrowLeft className="mr-2 w-4 h-4 group-hover:-translate-x-1 transition-transform" />
         Back to listings
       </button>
 
       {/* Property Detail Card */}
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+      <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100">
         {/* --- IMAGE GALLERY SECTION --- */}
-        <div className="bg-gray-100 border-b border-gray-200">
+        <div className="bg-gray-50 border-b border-gray-100">
           {activeImage ? (
             <div className="flex flex-col">
               {/* Main Image */}
-              <div className="relative h-64 sm:h-96 w-full overflow-hidden bg-black flex justify-center">
+              <div className="relative h-72 sm:h-[500px] w-full overflow-hidden bg-gray-100 flex justify-center group">
                 <img
                   src={`${BASE_URL}${activeImage}`}
                   alt={property.title}
-                  className="h-full object-contain"
+                  className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
               </div>
 
               {/* Thumbnails */}
               {property.images.length > 1 && (
-                <div className="flex gap-2 p-4 overflow-x-auto bg-white border-t scrollbar-hide">
+                <div className="flex gap-3 p-4 overflow-x-auto bg-white border-t border-gray-100 scrollbar-hide">
                   {property.images.map((img, idx) => (
                     <button
                       key={idx}
                       onClick={() => setActiveImage(img)}
-                      className={`relative flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition-all ${
+                      className={`relative flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden border-2 transition-all duration-300 ${
                         activeImage === img
-                          ? "border-indigo-600 scale-105"
-                          : "border-transparent opacity-70 hover:opacity-100"
+                          ? "border-lime-500 scale-105 shadow-md"
+                          : "border-transparent opacity-60 hover:opacity-100 hover:scale-105"
                       }`}
                     >
                       <img
                         src={`${BASE_URL}${img}`}
                         className="w-full h-full object-cover"
+                        alt={`Thumbnail ${idx + 1}`}
                       />
                     </button>
                   ))}
@@ -265,76 +255,49 @@ export default function PropertyDetail() {
             </div>
           ) : (
             // Placeholder if no images exist
-            <div className="h-64 flex flex-col items-center justify-center text-gray-400">
-              <svg
-                className="w-16 h-16 mb-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="1"
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              <span>No images available for this property</span>
+            <div className="h-72 sm:h-[500px] flex flex-col items-center justify-center text-gray-400 bg-gray-50">
+              <ImageOff className="w-16 h-16 mb-4 text-gray-300" />
+              <span className="font-medium">
+                No images available for this property
+              </span>
             </div>
           )}
         </div>
+
         {/* Header Section */}
-        <div className="p-6 sm:p-10 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+        <div className="p-8 sm:p-12 border-b border-gray-100 bg-white flex flex-col sm:flex-row sm:justify-between sm:items-start gap-6">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3 tracking-tight">
               {property.title}
             </h1>
-            <p className="flex items-center text-gray-600 mt-2">
-              <svg
-                className="h-5 w-5 mr-2 text-indigo-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
+            <p className="flex items-center text-gray-500 font-medium text-lg">
+              <MapPin className="h-5 w-5 mr-2 text-lime-500 flex-shrink-0" />
               {property.address}
             </p>
           </div>
 
           <div className="flex-shrink-0">
-            <span className="inline-flex items-center px-4 py-2 rounded-lg text-2xl font-bold bg-indigo-100 text-indigo-800 shadow-sm">
+            <span className="inline-flex items-center px-6 py-3 rounded-xl text-2xl font-bold bg-lime-400 text-gray-900 shadow-sm">
               ${Number(property.price).toLocaleString()}
             </span>
           </div>
         </div>
 
         {/* Content Section */}
-        <div className="p-6 sm:p-10">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="p-8 sm:p-12 bg-gray-50/50">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
             About this property
           </h2>
-          <div className="prose max-w-none text-gray-700 whitespace-pre-line leading-relaxed">
+          <div className="prose max-w-none text-gray-600 whitespace-pre-line leading-relaxed text-lg">
             {property.description}
           </div>
 
           {/* Conditional Rendering: Only show standard buttons if NOT the owner */}
           {!isOwner && (
-            <div className="mt-10 pt-6 border-t border-gray-100 flex flex-col sm:flex-row gap-4">
+            <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col sm:flex-row gap-4">
               <button
                 onClick={() => setIsOfferModalOpen(true)}
-                className="flex-1 bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="flex-1 bg-lime-400 text-gray-900 px-6 py-4 rounded-xl font-bold hover:bg-lime-500 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lime-500"
               >
                 Make an Offer
               </button>
@@ -343,84 +306,62 @@ export default function PropertyDetail() {
               <button
                 onClick={handleToggleSave}
                 disabled={isSaving}
-                className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-sm hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                   isSaved
-                    ? "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 focus:ring-red-500"
-                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-indigo-500"
-                } disabled:opacity-50`}
+                    ? "bg-gray-900 text-white border border-gray-900 hover:bg-gray-800 focus:ring-gray-900"
+                    : "bg-white text-gray-900 border border-gray-200 hover:border-gray-300 hover:bg-gray-50 focus:ring-gray-200"
+                } disabled:opacity-50 disabled:hover:translate-y-0`}
               >
-                {isSaved ? (
-                  <>
-                    <svg className="w-5 h-5 fill-current" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    Saved to Favorites
-                  </>
-                ) : (
-                  <>
-                    <svg
-                      className="w-5 h-5 stroke-current fill-transparent"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                      />
-                    </svg>
-                    Save for Later
-                  </>
-                )}
+                <Heart
+                  className={`w-5 h-5 ${isSaved ? "fill-lime-400 text-lime-400" : "text-gray-900"}`}
+                />
+                {isSaved ? "Saved to Favorites" : "Save for Later"}
               </button>
             </div>
           )}
         </div>
       </div>
+
       {/* --- OFFER MODAL --- */}
       {isOfferModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-in fade-in zoom-in duration-200">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 transform transition-all animate-in fade-in zoom-in-95 duration-200 border border-gray-100">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
               Make an Offer
             </h3>
-            <p className="text-sm text-gray-500 mb-6">
+            <p className="text-gray-500 mb-8 leading-relaxed">
               Enter the amount you are willing to pay for{" "}
-              <span className="font-semibold">{property.title}</span>.
+              <span className="font-bold text-gray-900">{property.title}</span>.
             </p>
 
             <form onSubmit={handleSendOffer}>
-              <div className="relative mb-6">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">
-                  $
-                </span>
+              <div className="relative mb-8">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <DollarSign className="h-6 w-6 text-gray-400" />
+                </div>
                 <input
                   autoFocus
                   type="number"
                   placeholder="Enter amount"
-                  className="w-full pl-8 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-colors text-lg font-semibold"
+                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-lime-400 focus:bg-white focus:outline-none transition-colors text-xl font-bold text-gray-900 placeholder-gray-400"
                   value={offerAmount}
                   onChange={(e) => setOfferAmount(e.target.value)}
                   required
                 />
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-4">
                 <button
                   type="button"
                   onClick={() => setIsOfferModalOpen(false)}
-                  className="flex-1 py-3 text-gray-600 font-medium hover:bg-gray-100 rounded-xl transition-colors"
+                  className="flex-1 py-4 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-all"
+                  className="flex-1 py-4 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 disabled:opacity-50 transition-all shadow-md hover:shadow-lg"
                 >
                   {isSubmitting ? "Sending..." : "Submit Offer"}
                 </button>

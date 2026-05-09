@@ -16,6 +16,7 @@ export interface PropertyData {
   publisher_id: number;
   publisher_name: string;
   publisher_email: string;
+  image_url: string | null;
 }
 
 export interface PropertyFormData {
