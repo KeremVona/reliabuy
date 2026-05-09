@@ -6,6 +6,8 @@ import { MapPin, User, AlertCircle } from "lucide-react";
 
 // 1. Define the TypeScript interface based on our backend JOIN query
 
+const BASE_URL = "http://localhost:5000";
+
 export default function PropertiesList() {
   // 2. State management
   const [properties, setProperties] = useState<PropertyData[]>([]);
@@ -98,24 +100,23 @@ export default function PropertiesList() {
                 key={property.property_id}
                 className="bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 group hover:-translate-y-1 flex flex-col overflow-hidden"
               >
-                {/* Optional Image Placeholder (Highly recommended for Real Estate UI) */}
+                {/* Optional Image Placeholder (Highly recommended for Real Estate UI)   */}
+                {/*src={`../../../..server/${property.image_url}`}*/}
                 <div className="h-48 bg-gray-200 relative overflow-hidden">
                   <img
-                    src={`../../../..server/${property.image_url}`}
+                    src={`${BASE_URL}${property.image_url}`}
                     alt={property.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   {/* Price Badge over image */}
                   <div className="absolute bottom-4 left-4 bg-lime-400 text-gray-900 px-4 py-1.5 rounded-full text-sm font-bold shadow-md">
                     ${Number(property.price).toLocaleString()}
-                    <p>{property.image_url}</p>
                   </div>
                 </div>
-
                 {/* Card Body */}
                 <div className="p-6 flex-grow flex flex-col">
                   <Link
-                    to={`/property/${property.property_id}`}
+                    to={`/property/:${property.property_id}`}
                     className="text-xl font-bold text-gray-900 line-clamp-1 mb-2 hover:text-lime-600 transition-colors"
                   >
                     {property.title}
@@ -130,7 +131,6 @@ export default function PropertiesList() {
                     {property.description}
                   </p>
                 </div>
-
                 {/* Card Footer (Publisher Info) */}
                 <div className="bg-gray-50 px-6 py-4 border-t border-gray-100 flex items-center justify-between">
                   <div className="flex items-center gap-2">

@@ -3,6 +3,15 @@ import axios from "axios";
 import type { PropertyFormData } from "../../interfaces/Property";
 import Navbar from "../ui/Navbar";
 import { jwtDecode } from "jwt-decode";
+import {
+  Sparkles,
+  Upload,
+  X,
+  Home,
+  MapPin,
+  DollarSign,
+  Loader2,
+} from "lucide-react";
 
 // 1. Define the data structure for the form
 
@@ -133,43 +142,50 @@ export default function MakeProperty() {
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-gray-50 pb-20">
       <Navbar />
-      <div className="max-w-2xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
+
+      <div className="max-w-2xl mx-auto px-6 py-12 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-10 text-center sm:text-left">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
             Publish a Property
           </h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Fill out the form below to list a new property on the market.
+          <p className="mt-3 text-lg text-gray-600">
+            Reach thousands of buyers by listing your property in minutes.
           </p>
         </div>
 
         {/* Success Banner */}
         {successMessage && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-md">
-            {successMessage}
+          <div className="mb-8 p-4 bg-lime-50 border border-lime-200 text-lime-800 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+            <div className="bg-lime-400 p-1 rounded-full text-gray-900">
+              <Sparkles size={16} />
+            </div>
+            <span className="font-semibold">{successMessage}</span>
           </div>
         )}
 
         {/* Error Banner */}
         {errorMessage && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-md">
-            {errorMessage}
+          <div className="mb-8 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+            <X size={20} className="text-red-500" />
+            <span className="font-semibold">{errorMessage}</span>
           </div>
         )}
 
         <form
           onSubmit={handleSubmit}
-          className="bg-white shadow-md rounded-lg p-6 border border-gray-100"
+          className="bg-white shadow-sm rounded-2xl p-8 border border-gray-100"
         >
-          <div className="grid grid-cols-1 gap-y-6">
+          <div className="space-y-8">
             {/* Title Input */}
-            <div>
+            <div className="space-y-2">
               <label
                 htmlFor="title"
-                className="block text-sm font-medium text-gray-700"
+                className="flex items-center gap-2 text-sm font-bold text-gray-900 uppercase tracking-wider"
               >
+                <Home size={16} className="text-lime-500" />
                 Property Title
               </label>
               <input
@@ -180,16 +196,16 @@ export default function MakeProperty() {
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="e.g., Luxury Condo in Downtown"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 placeholder-gray-400"
               />
             </div>
 
             {/* Description Textarea */}
-            <div>
-              <div className="flex justify-between items-center mb-1">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
                 <label
                   htmlFor="description"
-                  className="block text-sm font-medium text-gray-700"
+                  className="text-sm font-bold text-gray-900 uppercase tracking-wider"
                 >
                   Description
                 </label>
@@ -197,38 +213,22 @@ export default function MakeProperty() {
                   type="button"
                   onClick={handleGenerateDescription}
                   disabled={isGenerating || selectedFiles.length === 0}
-                  className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-md shadow-sm text-white ${
+                  className={`inline-flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-full transition-all duration-300 ${
                     isGenerating || selectedFiles.length === 0
-                      ? "bg-purple-300 cursor-not-allowed"
-                      : "bg-purple-600 hover:bg-purple-700"
-                  } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors`}
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-gray-900 text-white hover:bg-gray-800 shadow-md hover:shadow-lg active:scale-95"
+                  }`}
                 >
                   {isGenerating ? (
                     <>
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-3 w-3 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Scanning...
+                      <Loader2 size={14} className="animate-spin" />
+                      AI is Writing...
                     </>
                   ) : (
-                    "✨ Auto-Write with AI"
+                    <>
+                      <Sparkles size={14} className="text-lime-400" />
+                      Auto-Write with AI
+                    </>
                   )}
                 </button>
               </div>
@@ -236,21 +236,22 @@ export default function MakeProperty() {
                 name="description"
                 id="description"
                 required
-                rows={4}
+                rows={5}
                 value={formData.description}
                 onChange={handleChange}
-                placeholder="Describe the property's best features..."
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                placeholder="Describe the property's best features, neighborhood, and selling points..."
+                className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 placeholder-gray-400 resize-none"
               />
             </div>
 
-            <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-6">
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
               {/* Price Input */}
-              <div>
+              <div className="space-y-2">
                 <label
                   htmlFor="price"
-                  className="block text-sm font-medium text-gray-700"
+                  className="flex items-center gap-2 text-sm font-bold text-gray-900 uppercase tracking-wider"
                 >
+                  <DollarSign size={16} className="text-lime-500" />
                   Price ($)
                 </label>
                 <input
@@ -263,35 +264,37 @@ export default function MakeProperty() {
                   value={formData.price}
                   onChange={handleChange}
                   placeholder="250000"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                  className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 font-bold"
+                />
+              </div>
+
+              {/* Address Input */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="address"
+                  className="flex items-center gap-2 text-sm font-bold text-gray-900 uppercase tracking-wider"
+                >
+                  <MapPin size={16} className="text-lime-500" />
+                  Full Address
+                </label>
+                <input
+                  type="text"
+                  name="address"
+                  id="address"
+                  required
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="123 Main St, Springfield..."
+                  className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900"
                 />
               </div>
             </div>
 
-            {/* Address Input */}
-            <div>
-              <label
-                htmlFor="address"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Full Address
-              </label>
-              <input
-                type="text"
-                name="address"
-                id="address"
-                required
-                value={formData.address}
-                onChange={handleChange}
-                placeholder="123 Main St, Springfield, IL 62701"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-              />
-            </div>
-
+            {/* Image Upload Area */}
             <div
               onDragOver={(e) => e.preventDefault()}
               onDrop={onDrop}
-              className="mt-6 border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-indigo-500 transition-colors cursor-pointer"
+              className="group relative border-2 border-dashed border-gray-200 rounded-2xl p-10 text-center hover:border-lime-400 hover:bg-lime-50/30 transition-all duration-300 cursor-pointer"
             >
               <input
                 type="file"
@@ -300,73 +303,67 @@ export default function MakeProperty() {
                 className="hidden"
                 id="fileInput"
               />
-              <label htmlFor="fileInput" className="cursor-pointer">
-                <p className="text-gray-600">
-                  Drag & drop images here or <b>click to browse</b>
+              <label
+                htmlFor="fileInput"
+                className="cursor-pointer flex flex-col items-center"
+              >
+                <div className="mb-4 p-4 bg-gray-50 rounded-full text-gray-400 group-hover:text-lime-500 group-hover:bg-white transition-all shadow-sm">
+                  <Upload size={32} />
+                </div>
+                <p className="text-gray-900 font-bold">
+                  Drag & drop images here or{" "}
+                  <span className="text-lime-600 underline">browse</span>
                 </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Supports JPG, PNG, WEBP
+                <p className="text-xs text-gray-400 mt-2 font-medium">
+                  Supports High-Res JPG, PNG, WEBP (Max 10 images)
                 </p>
               </label>
 
               {/* Previews */}
-              <div className="flex flex-wrap gap-4 mt-4">
-                {selectedFiles.map((file, i) => (
-                  <div key={i} className="relative w-20 h-20">
-                    <img
-                      src={URL.createObjectURL(file)}
-                      className="w-full h-full object-cover rounded-md"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSelectedFiles((prev) =>
-                          prev.filter((_, idx) => idx !== i),
-                        )
-                      }
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs"
+              {selectedFiles.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-4 mt-8">
+                  {selectedFiles.map((file, i) => (
+                    <div
+                      key={i}
+                      className="group/thumb relative w-20 h-20 rounded-xl overflow-hidden shadow-md border-2 border-white"
                     >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt="preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedFiles((prev) =>
+                            prev.filter((_, idx) => idx !== i),
+                          )
+                        }
+                        className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity"
+                      >
+                        <X size={18} className="text-white" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Submit Button */}
-            <div className="pt-4">
+            <div className="pt-6">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                className={`w-full flex justify-center items-center py-4 px-6 rounded-xl shadow-lg text-lg font-bold transition-all duration-300 ${
                   isSubmitting
-                    ? "bg-indigo-400 cursor-not-allowed"
-                    : "bg-indigo-600 hover:bg-indigo-700"
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200`}
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
+                    : "bg-lime-400 text-gray-900 hover:bg-lime-500 hover:shadow-lime-200 hover:-translate-y-1 active:scale-[0.98]"
+                }`}
               >
                 {isSubmitting ? (
-                  <span className="flex items-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Publishing...
+                  <span className="flex items-center gap-3">
+                    <Loader2 size={20} className="animate-spin" />
+                    Publishing Listing...
                   </span>
                 ) : (
                   "Publish Property"
@@ -376,6 +373,6 @@ export default function MakeProperty() {
           </div>
         </form>
       </div>
-    </>
+    </div>
   );
 }

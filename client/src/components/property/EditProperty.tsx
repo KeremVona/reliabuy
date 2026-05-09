@@ -1,6 +1,18 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import {
+  ArrowLeft,
+  Home,
+  MapPin,
+  DollarSign,
+  FileText,
+  Save,
+  X,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
+import Navbar from "../ui/Navbar";
 
 export interface PropertyEditData {
   title: string;
@@ -114,151 +126,168 @@ export default function EditProperty() {
 
   // Render: Main Form
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-      {/* Header & Back Button */}
-      <div className="mb-8">
-        <button
-          onClick={() => navigate(-1)}
-          className="mb-4 flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
-        >
-          <svg
-            className="mr-2 w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+    <div className="min-h-screen bg-gray-50 pb-20">
+      <Navbar />
+
+      <div className="max-w-3xl mx-auto px-6 py-12 lg:px-8 font-sans">
+        {/* Header & Back Button */}
+        <div className="mb-10">
+          <button
+            onClick={() => navigate(-1)}
+            className="mb-6 flex items-center text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors group"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M10 19l-7-7m0 0l7-7m-7 7h18"
-            />
-          </svg>
-          Back
-        </button>
-        <h1 className="text-3xl font-extrabold text-gray-900">Edit Property</h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Update the details of your listing below.
-        </p>
-      </div>
-
-      {/* Error Message Alert */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-r-md">
-          <p>{error}</p>
+            <ArrowLeft className="mr-2 w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            Discard Changes
+          </button>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+            Edit Listing
+          </h1>
+          <p className="mt-2 text-lg text-gray-600">
+            Refine your property details to attract the best offers.
+          </p>
         </div>
-      )}
 
-      {/* The Form */}
-      <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-        <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
-          {/* Title Input */}
-          <div>
-            <label
-              htmlFor="title"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Property Title
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 transition-colors"
-              placeholder="e.g., Beautiful Beachfront Villa"
-            />
-          </div>
-
-          {/* Address Input */}
-          <div>
-            <label
-              htmlFor="address"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Address
-            </label>
-            <input
-              type="text"
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 transition-colors"
-              placeholder="e.g., 123 Ocean Drive, Miami, FL"
-            />
-          </div>
-
-          {/* Price Input */}
-          <div>
-            <label
-              htmlFor="price"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Price (USD)
-            </label>
-            <div className="mt-1 relative rounded-lg shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-500 sm:text-sm">$</span>
-              </div>
-              <input
-                type="number"
-                id="price"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                required
-                min="0"
-                className="block w-full pl-7 pr-12 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 transition-colors"
-                placeholder="0.00"
-              />
+        {/* Error Message Alert */}
+        {error && (
+          <div className="mb-8 p-4 bg-red-50 border border-red-100 text-red-700 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+            <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-bold text-sm uppercase tracking-wider">
+                Update Failed
+              </p>
+              <p className="text-sm opacity-90">{error}</p>
             </div>
           </div>
+        )}
 
-          {/* Description Input */}
-          <div>
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Description
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              rows={5}
-              value={formData.description}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 transition-colors resize-y"
-              placeholder="Tell buyers about this property..."
-            />
-          </div>
+        {/* The Form */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <form onSubmit={handleSubmit} className="p-8 sm:p-10 space-y-8">
+            {/* Title Input */}
+            <div className="space-y-2">
+              <label
+                htmlFor="title"
+                className="flex items-center gap-2 text-sm font-bold text-gray-900 uppercase tracking-widest"
+              >
+                <Home size={16} className="text-lime-500" />
+                Property Title
+              </label>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                required
+                className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 font-medium placeholder-gray-400"
+                placeholder="e.g., Beautiful Beachfront Villa"
+              />
+            </div>
 
-          {/* Action Buttons */}
-          <div className="pt-4 flex items-center justify-end space-x-4 border-t border-gray-100">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-              disabled={saving}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className={`px-6 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors ${
-                saving ? "opacity-75 cursor-not-allowed" : ""
-              }`}
-            >
-              {saving ? "Saving Changes..." : "Save Changes"}
-            </button>
-          </div>
-        </form>
+            {/* Address Input */}
+            <div className="space-y-2">
+              <label
+                htmlFor="address"
+                className="flex items-center gap-2 text-sm font-bold text-gray-900 uppercase tracking-widest"
+              >
+                <MapPin size={16} className="text-lime-500" />
+                Location
+              </label>
+              <input
+                type="text"
+                id="address"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                required
+                className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 font-medium placeholder-gray-400"
+                placeholder="e.g., 123 Ocean Drive, Miami, FL"
+              />
+            </div>
+
+            {/* Price Input */}
+            <div className="space-y-2">
+              <label
+                htmlFor="price"
+                className="flex items-center gap-2 text-sm font-bold text-gray-900 uppercase tracking-widest"
+              >
+                <DollarSign size={16} className="text-lime-500" />
+                Price (USD)
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <span className="text-gray-400 font-bold">$</span>
+                </div>
+                <input
+                  type="number"
+                  id="price"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  required
+                  min="0"
+                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 font-bold"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            {/* Description Input */}
+            <div className="space-y-2">
+              <label
+                htmlFor="description"
+                className="flex items-center gap-2 text-sm font-bold text-gray-900 uppercase tracking-widest"
+              >
+                <FileText size={16} className="text-lime-500" />
+                Description
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                rows={6}
+                value={formData.description}
+                onChange={handleChange}
+                required
+                className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 leading-relaxed resize-none"
+                placeholder="Tell buyers about this property..."
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="pt-8 flex flex-col sm:flex-row items-center justify-end gap-4 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="w-full sm:w-auto px-8 py-3 rounded-xl text-sm font-bold text-gray-500 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900 transition-all flex items-center justify-center gap-2"
+                disabled={saving}
+              >
+                <X size={18} />
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className={`w-full sm:w-auto px-10 py-3 rounded-xl text-sm font-bold text-gray-900 shadow-lg transition-all flex items-center justify-center gap-2 ${
+                  saving
+                    ? "bg-gray-200 cursor-not-allowed"
+                    : "bg-lime-400 hover:bg-lime-500 hover:shadow-lime-200 hover:-translate-y-1 active:scale-95"
+                }`}
+              >
+                {saving ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <Save size={18} />
+                    Save Changes
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

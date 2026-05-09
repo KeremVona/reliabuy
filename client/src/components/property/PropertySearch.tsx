@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import type { Property } from "../../interfaces/Property";
+import { Search, X, MapPin, ArrowRight, Loader2, SearchX } from "lucide-react";
+import { useNavigate } from "react-router";
 
 const PropertySearch: React.FC = () => {
   const [query, setQuery] = useState<string>("");
   const [results, setResults] = useState<Property[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSearch = async () => {
@@ -41,68 +45,114 @@ const PropertySearch: React.FC = () => {
   }, [query]);
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="relative">
-        <span className="absolute left-4 top-4 text-gray-400">🔍</span>
-        <input
-          type="text"
-          className="w-full p-4 pl-12 pr-12 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          placeholder="Search by title or city..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        {/* Clear Search Button */}
-        {query && (
-          <button
-            onClick={() => {
-              setQuery("");
-              setResults([]);
-            }}
-            className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors"
-            aria-label="Clear search"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        )}{" "}
-      </div>
-
-      {loading && (
-        <p className="mt-4 text-blue-500 animate-pulse">Searching...</p>
-      )}
-
-      <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {results.map((property) => (
-          <div
-            key={property.id}
-            className="bg-white p-4 rounded-xl shadow hover:shadow-lg transition-shadow border border-gray-100"
-          >
-            <h3 className="font-bold text-lg text-gray-800">
-              {property.title}
-            </h3>
-            <p className="text-gray-500 text-sm">📍 {property.address}</p>
-            <p className="mt-2 text-blue-600 font-semibold">
-              ${property.price}
-            </p>
+    <div className="bg-gray-50 py-12">
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+        {/* Search Bar Container */}
+        <div className="relative group max-w-3xl mx-auto">
+          <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-lime-500 transition-colors">
+            <Search size={24} strokeWidth={2.5} />
           </div>
-        ))}
-      </div>
 
-      {!loading && query.length > 2 && results.length === 0 && (
-        <p className="mt-4 text-gray-500">No properties found for "{query}"</p>
-      )}
+          <input
+            type="text"
+            className="w-full bg-white p-6 pl-14 pr-14 rounded-2xl border border-gray-100 shadow-sm text-lg font-medium text-gray-900 placeholder-gray-400 focus:ring-4 focus:ring-lime-400/20 focus:border-lime-400 focus:outline-none transition-all"
+            placeholder="Search by title, neighborhood, or city..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+
+          {/* Clear Search Button */}
+          {query && (
+            <button
+              onClick={() => {
+                setQuery("");
+                setResults([]);
+              }}
+              className="absolute right-5 top-1/2 -translate-y-1/2 p-1.5 bg-gray-100 text-gray-400 hover:text-gray-900 hover:bg-gray-200 rounded-full transition-all"
+              aria-label="Clear search"
+            >
+              <X size={18} strokeWidth={3} />
+            </button>
+          )}
+        </div>
+
+        {/* Searching State */}
+        {loading && (
+          <div className="mt-8 flex items-center justify-center gap-3 text-lime-600 font-bold uppercase tracking-widest text-xs">
+            <Loader2 size={18} className="animate-spin" />
+            Fetching live results...
+          </div>
+        )}
+
+        {/* Results Meta Info */}
+        {!loading && query.length > 0 && results.length > 0 && (
+          <div className="mt-10 mb-6 flex items-center justify-between">
+            <p className="text-gray-500 font-medium">
+              Showing{" "}
+              <span className="text-gray-900 font-bold">{results.length}</span>{" "}
+              properties matching your search
+            </p>
+            <div className="h-px flex-grow mx-4 bg-gray-200 hidden sm:block"></div>
+          </div>
+        )}
+
+        {/* Results Grid */}
+        <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {results.map((property) => (
+            <div
+              key={property.id}
+              onClick={() => navigate(`/property/:${property.id}`)}
+              className="group bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 cursor-pointer hover:-translate-y-1 flex flex-col"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="font-bold text-xl text-gray-900 group-hover:text-lime-600 transition-colors line-clamp-1">
+                  {property.title}
+                </h3>
+                <ArrowRight
+                  size={18}
+                  className="text-gray-300 group-hover:text-lime-500 group-hover:translate-x-1 transition-all"
+                />
+              </div>
+
+              <div className="flex items-center gap-1.5 text-gray-500 text-sm mb-6">
+                <MapPin size={16} className="text-lime-500" />
+                <span className="line-clamp-1">{property.address}</span>
+              </div>
+
+              <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between">
+                <p className="text-2xl font-black text-gray-900">
+                  ${Number(property.price).toLocaleString()}
+                </p>
+                <span className="text-[10px] font-black uppercase tracking-tighter text-gray-400 bg-gray-50 px-2 py-1 rounded">
+                  Available
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* No Results State */}
+        {!loading && query.length > 2 && results.length === 0 && (
+          <div className="mt-20 text-center flex flex-col items-center">
+            <div className="bg-gray-100 p-6 rounded-full mb-4">
+              <SearchX size={40} className="text-gray-300" strokeWidth={1.5} />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900">
+              No matches found
+            </h3>
+            <p className="text-gray-500 mt-2">
+              We couldn't find anything for "
+              <span className="text-gray-900 font-semibold">{query}</span>".
+            </p>
+            <button
+              onClick={() => setQuery("")}
+              className="mt-6 text-lime-600 font-bold hover:underline"
+            >
+              Clear filters and try again
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

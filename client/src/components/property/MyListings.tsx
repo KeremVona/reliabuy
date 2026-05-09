@@ -3,6 +3,15 @@ import axios from "axios";
 import type { Property } from "../../interfaces/Property";
 import Navbar from "../ui/Navbar";
 import { Link } from "react-router";
+import {
+  Plus,
+  MapPin,
+  Edit3,
+  Trash2,
+  Home,
+  ExternalLink,
+  ArrowRight,
+} from "lucide-react";
 
 const MyListings: React.FC = () => {
   const [listings, setListings] = useState<Property[]>([]);
@@ -70,75 +79,119 @@ const MyListings: React.FC = () => {
     return <div className="p-10 text-center text-red-500">{error}</div>;
 
   return (
-    <>
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-800">My Listings</h1>
+
+      <div className="max-w-6xl mx-auto px-6 py-12 lg:px-8">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+              My Portfolio
+            </h1>
+            <p className="mt-2 text-lg text-gray-600">
+              Manage your published properties and track their performance.
+            </p>
+          </div>
           <Link
             to="/publish"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+            className="inline-flex items-center justify-center gap-2 bg-gray-900 text-white px-6 py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl active:scale-95 whitespace-nowrap"
           >
-            + Add New Property
+            <Plus size={20} className="text-lime-400" />
+            Add New Property
           </Link>
         </div>
 
         {listings.length === 0 ? (
-          <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl p-12 text-center">
-            <p className="text-gray-500">
-              You haven't posted any properties yet.
+          /* Empty State */
+          <div className="bg-white border border-gray-100 rounded-3xl p-16 text-center flex flex-col items-center shadow-sm">
+            <div className="bg-gray-50 p-6 rounded-full mb-6">
+              <Home className="w-12 h-12 text-gray-300" strokeWidth={1.5} />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              No active listings
+            </h2>
+            <p className="text-gray-500 max-w-sm mb-8">
+              You haven't published any properties yet. Ready to make your first
+              sale?
             </p>
+            <Link
+              to="/publish"
+              className="text-lime-600 font-bold hover:text-lime-700 flex items-center gap-2 transition-all"
+            >
+              Start your first listing <ArrowRight size={18} />
+            </Link>
           </div>
         ) : (
-          <div className="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-100">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="p-4 font-semibold text-gray-600">Property</th>
-                  <th className="p-4 font-semibold text-gray-600">Location</th>
-                  <th className="p-4 font-semibold text-gray-600">Price</th>
-                  <th className="p-4 font-semibold text-gray-600 text-right">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {listings.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="border-b border-gray-50 hover:bg-gray-50/50 transition"
-                  >
-                    <td className="p-4 font-medium text-gray-800">
-                      {item.title}
-                    </td>
-                    <td className="p-4 text-gray-500 text-sm">
-                      {item.address}
-                    </td>
-                    <td className="p-4 text-blue-600 font-semibold">
-                      ${item.price}
-                    </td>
-                    <td className="p-4 text-right space-x-2">
-                      <Link
-                        to={`/property/edit/:${item.id}`}
-                        className="text-gray-400 hover:text-blue-600 transition"
-                      >
-                        Edit
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(item.id!)}
-                        className="text-gray-400 hover:text-red-600 transition"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          /* Listings Portfolio */
+          <div className="space-y-4">
+            {/* Table Header - Desktop Only */}
+            <div className="hidden md:grid grid-cols-12 px-8 mb-4 text-xs font-black uppercase tracking-[0.2em] text-gray-400">
+              <div className="col-span-6">Property Details</div>
+              <div className="col-span-2">Price</div>
+              <div className="col-span-4 text-right">Management</div>
+            </div>
+
+            {listings.map((item) => (
+              <div
+                key={item.id}
+                className="bg-white border border-gray-100 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-all duration-300 group"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-6">
+                  {/* Property Info */}
+                  <div className="md:col-span-6 flex items-center gap-5">
+                    <div className="w-16 h-16 rounded-xl bg-gray-900 flex items-center justify-center text-lime-400 flex-shrink-0">
+                      <Home size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900 group-hover:text-lime-600 transition-colors">
+                        {item.title}
+                      </h3>
+                      <p className="flex items-center gap-1.5 text-sm text-gray-500 font-medium">
+                        <MapPin size={14} className="text-gray-400" />
+                        {item.address}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Price Display */}
+                  <div className="md:col-span-2">
+                    <span className="text-xl font-black text-gray-900">
+                      ${Number(item.price).toLocaleString()}
+                    </span>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="md:col-span-4 flex items-center justify-start md:justify-end gap-3">
+                    <Link
+                      to={`/property/:${item.id}`}
+                      className="p-3 bg-gray-50 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all"
+                      title="View Public Page"
+                    >
+                      <ExternalLink size={18} />
+                    </Link>
+                    <Link
+                      to={`/property/edit/:${item.id}`}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-gray-50 text-gray-600 font-bold rounded-xl hover:bg-gray-900 hover:text-white transition-all"
+                    >
+                      <Edit3 size={16} />
+                      <span className="text-sm">Edit</span>
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(item.id!)}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-white text-red-500 border border-red-50 rounded-xl hover:bg-red-500 hover:text-white hover:border-red-500 transition-all font-bold"
+                    >
+                      <Trash2 size={16} />
+                      <span className="text-sm">Delete</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 };
 
