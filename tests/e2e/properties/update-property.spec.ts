@@ -5,7 +5,7 @@ import {
   seedTestProperty,
 } from "../../../test-utils/db";
 
-test.describe.configure({ mode: "serial" });
+//test.describe.configure({ mode: "serial" });
 
 test.describe("Property Updating & Ownership Validation", () => {
   let ownerToken: string;
