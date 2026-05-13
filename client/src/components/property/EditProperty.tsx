@@ -21,6 +21,11 @@ export interface PropertyEditData {
   address: string;
 }
 
+// 1. Define the type for the errors object coming from the backend
+type FieldErrors = {
+  [key: string]: string[] | undefined;
+};
+
 export default function EditProperty() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -37,6 +42,10 @@ export default function EditProperty() {
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 2. Make state specifically for the validation errors
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [generalError, setGeneralError] = useState("");
 
   // 1. Fetch the existing property data when the component mounts
   useEffect(() => {
@@ -82,6 +91,12 @@ export default function EditProperty() {
       ...prev,
       [name]: value,
     }));
+
+    // Clear field error when user edits
+    setErrors((prev) => ({
+      ...prev,
+      [name]: undefined,
+    }));
   };
 
   // 3. Handle form submission
@@ -89,26 +104,57 @@ export default function EditProperty() {
     e.preventDefault();
     setSaving(true);
     setError(null);
+    setErrors({}); // Clear old errors on new submit
+    setGeneralError("");
 
     try {
       // Grab token for authentication (so backend knows you are the owner)
       const token = localStorage.getItem("token");
 
-      await axios.put(`http://localhost:5000/api/property/${id}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      const response = await axios.put(
+        `http://localhost:5000/api/property/${id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       // On success, redirect back to the property detail page
       navigate(`/property/${id}`);
     } catch (err: any) {
       console.error("Failed to update property:", err);
-      setError(
-        err.response?.data?.message ||
-          "Failed to save changes. Please try again.",
-      );
+
+      // Backend validation errors (400)
+      if (err.response?.status === 400) {
+        setErrors(err.response.data.errors || {});
+        setGeneralError(
+          err.response.data.message || "Please fix the errors below.",
+        );
+      }
+
+      // Unauthorized
+      else if (err.response?.status === 403) {
+        setGeneralError("You are not allowed to edit this property.");
+      }
+
+      // Property not found
+      else if (err.response?.status === 404) {
+        setGeneralError("This property no longer exists.");
+      }
+
+      // Server error
+      else if (err.response?.status === 500) {
+        setGeneralError("Server error. Please try again later.");
+      }
+
+      // Network error
+      else {
+        setGeneralError("Network error. Check your connection and try again.");
+      }
+
       setSaving(false);
     }
   };
@@ -178,9 +224,18 @@ export default function EditProperty() {
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 font-medium placeholder-gray-400"
+                className={`w-full bg-gray-50 border-2 rounded-xl px-4 py-3 focus:outline-none transition-all text-gray-900 font-medium placeholder-gray-400 ${
+                  errors.title
+                    ? "border-red-400 bg-red-50"
+                    : "border-gray-100 focus:border-lime-400 focus:bg-white"
+                }`}
                 placeholder="e.g., Beautiful Beachfront Villa"
               />
+              {errors.title && (
+                <p className="text-sm text-red-500 font-medium">
+                  {errors.title[0]}
+                </p>
+              )}
             </div>
 
             {/* Address Input */}
@@ -198,9 +253,18 @@ export default function EditProperty() {
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
-                className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 font-medium placeholder-gray-400"
+                className={`w-full bg-gray-50 border-2 rounded-xl px-4 py-3 focus:outline-none transition-all text-gray-900 font-medium placeholder-gray-400 ${
+                  errors.address
+                    ? "border-red-400 bg-red-50"
+                    : "border-gray-100 focus:border-lime-400 focus:bg-white"
+                }`}
                 placeholder="e.g., 123 Ocean Drive, Miami, FL"
               />
+              {errors.address && (
+                <p className="text-sm text-red-500 font-medium">
+                  {errors.address[0]}
+                </p>
+              )}
             </div>
 
             {/* Price Input */}
@@ -223,9 +287,18 @@ export default function EditProperty() {
                   value={formData.price}
                   onChange={handleChange}
                   min="0"
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 font-bold"
+                  className={`w-full bg-gray-50 border-2 rounded-xl px-4 py-3 focus:outline-none transition-all text-gray-900 font-medium placeholder-gray-400 ${
+                    errors.price
+                      ? "border-red-400 bg-red-50"
+                      : "border-gray-100 focus:border-lime-400 focus:bg-white"
+                  }`}
                   placeholder="0.00"
                 />
+                {errors.price && (
+                  <p className="text-sm text-red-500 font-medium">
+                    {errors.price[0]}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -244,11 +317,24 @@ export default function EditProperty() {
                 rows={6}
                 value={formData.description}
                 onChange={handleChange}
-                className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 leading-relaxed resize-none"
+                className={`w-full bg-gray-50 border-2 rounded-xl px-4 py-3 focus:outline-none transition-all text-gray-900 font-medium placeholder-gray-400 ${
+                  errors.description
+                    ? "border-red-400 bg-red-50"
+                    : "border-gray-100 focus:border-lime-400 focus:bg-white"
+                }`}
                 placeholder="Tell buyers about this property..."
               />
+              {errors.description && (
+                <p className="text-sm text-red-500 font-medium">
+                  {errors.description[0]}
+                </p>
+              )}
             </div>
-
+            {generalError && (
+              <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium">
+                {generalError}
+              </div>
+            )}
             {/* Action Buttons */}
             <div className="pt-8 flex flex-col sm:flex-row items-center justify-end gap-4 border-t border-gray-100">
               <button

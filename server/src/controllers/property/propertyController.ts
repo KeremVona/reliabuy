@@ -135,10 +135,27 @@ export async function updateProperty(
 
     const propertyData: Property = req.body;
 
+    const validationResult = makePropertySchema.safeParse(req.body);
+
     if (isNaN(propertyId)) {
       res.status(400).json({ error: "Invalid Property ID provided" });
       //return;
     }
+
+    if (!validationResult.success) {
+      // 3. Send detailed validation errors back to the frontend
+      // .flatten().fieldErrors transforms Zod errors into a clean object:
+      // { title: ["Title must be at least 5 characters."], price: ["..."] }
+      res.status(400).json({
+        success: false,
+        message: "Please fix the validation errors.",
+        errors: validationResult.error.flatten().fieldErrors,
+      });
+      return;
+    }
+
+    // 4. Extract the clean, validated data
+    const validatedData = validationResult.data;
 
     const existingProperty = await propertyService.getPropertyById(propertyId);
 
@@ -154,10 +171,17 @@ export async function updateProperty(
       });
       return;
     }
+    // 5. Merge the existing property with the newly validated data
+    // This satisfies TypeScript by providing the required user_id and any other fields
+    const fullPropertyData: Property = {
+      ...existingProperty,
+      ...validatedData,
+    };
 
+    // 6. Save the merged data to the database
     const updatedProperty = await propertyService.updateProperty(
       propertyId,
-      propertyData,
+      fullPropertyData,
     );
 
     if (!updatedProperty) {
