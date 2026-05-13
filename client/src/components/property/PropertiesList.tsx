@@ -16,6 +16,9 @@ export default function PropertiesList() {
 
   const [sortOrder, setSortOrder] = useState("default");
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const propertiesPerPage = 6;
+
   const sortedProperties = [...properties].sort((a, b) => {
     if (sortOrder === "low-high") {
       return Number(a.price) - Number(b.price);
@@ -27,6 +30,13 @@ export default function PropertiesList() {
 
     return 0;
   });
+
+  const totalPages = Math.ceil(sortedProperties.length / propertiesPerPage);
+
+  const startIndex = (currentPage - 1) * propertiesPerPage;
+  const endIndex = startIndex + propertiesPerPage;
+
+  const currentProperties = sortedProperties.slice(startIndex, endIndex);
 
   // 3. Fetch data on component mount
   useEffect(() => {
@@ -124,7 +134,7 @@ export default function PropertiesList() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {sortedProperties.map((property) => (
+            {currentProperties.map((property) => (
               <div
                 key={property.property_id}
                 className="bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 group hover:-translate-y-1 flex flex-col overflow-hidden"
@@ -186,6 +196,39 @@ export default function PropertiesList() {
             ))}
           </div>
         )}
+        <div className="flex justify-center items-center gap-2 mt-10">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 rounded-xl border border-gray-200 bg-white disabled:opacity-50"
+          >
+            Previous
+          </button>
+
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentPage(index + 1)}
+              className={`px-4 py-2 rounded-xl font-semibold transition ${
+                currentPage === index + 1
+                  ? "bg-lime-400 text-black"
+                  : "bg-white border border-gray-200"
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 rounded-xl border border-gray-200 bg-white disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );
