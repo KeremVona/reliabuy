@@ -84,6 +84,8 @@ export const loginHandler = async (
     // Validate incoming request body
     const { email, password } = loginSchema.parse(req.body);
 
+    // console.log(password);
+
     const user = await loginUser(email, password);
 
     if (!user) {
