@@ -3,7 +3,19 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test:register": "cross-env PLAYWRIGHT_HTML_REPORT=functional-test-reports/register npx playwright test tests/e2e/auth/register.spec.ts --reporter=html",
+    "test:login": "cross-env PLAYWRIGHT_HTML_REPORT=functional-test-reports/login npx playwright test tests/e2e/auth/login.spec.ts --reporter=html",
+    "test:view": "cross-env PLAYWRIGHT_HTML_REPORT=functional-test-reports/view-property npx playwright test tests/e2e/properties/view-property.spec.ts --reporter=html",
+    "test:make": "cross-env PLAYWRIGHT_HTML_REPORT=functional-test-reports/make-property npx playwright test tests/e2e/properties/make-property.spec.ts --reporter=html",
+    "test:update": "cross-env PLAYWRIGHT_HTML_REPORT=functional-test-reports/update-property npx playwright test tests/e2e/properties/update-property.spec.ts --reporter=html",
+    "test:delete": "cross-env PLAYWRIGHT_HTML_REPORT=functional-test-reports/delete-property npx playwright test tests/e2e/properties/delete-property.spec.ts --reporter=html",
+    "test:ai-description": "cross-env PLAYWRIGHT_HTML_REPORT=functional-test-reports/ai-description npx playwright test tests/e2e/properties/ai-description.spec.ts --reporter=html",
+    "test:favorites": "cross-env PLAYWRIGHT_HTML_REPORT=functional-test-reports/favorites npx playwright test tests/e2e/properties/favorites.spec.ts --reporter=html",
+    "test:user-dashboards": "cross-env PLAYWRIGHT_HTML_REPORT=functional-test-reports/user-dashboards npx playwright test tests/e2e/properties/user-dashboards.spec.ts --reporter=html",
+    "test:fetch-offers": "cross-env PLAYWRIGHT_HTML_REPORT=functional-test-reports/fetch-offers npx playwright test tests/e2e/offer/fetch-offers.spec.ts --reporter=html",
+    "test:manage-offers": "cross-env PLAYWRIGHT_HTML_REPORT=functional-test-reports/manage-offers npx playwright test tests/e2e/offer/manage-offers.spec.ts --reporter=html"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/KeremVona/reliabuy.git"
@@ -18,6 +30,15 @@
   "homepage": "https://github.com/KeremVona/reliabuy#readme",
   "devDependencies": {
     "@playwright/test": "^1.60.0",
-    "@types/node": "^25.7.0"
+    "@types/bcrypt": "^6.0.0",
+    "@types/dotenv": "^6.1.1",
+    "@types/node": "^25.7.0",
+    "@types/pg": "^8.20.0",
+    "cross-env": "^10.1.0"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
+    "pg": "^8.20.0"
   }
 }

@@ -19,8 +19,6 @@ export const makeOfferHandler = async (req: Request, res: Response) => {
       buyer_id: parsedBuyerId,
     });
 
-    console.log("newOffer: ", newOffer);
-
     res.status(201).json(newOffer);
   } catch (error) {
     res.status(500).json({ message: "Error making offer", error });
@@ -31,6 +29,7 @@ export const getPropertyOffers = async (req: Request, res: Response) => {
   try {
     const { propertyId } = req.params;
     const offers = await getOffersByProperty(Number(propertyId));
+    console.log(offers);
     res.json(offers);
   } catch (error) {
     res.status(500).json({ message: "Error fetching offers" });

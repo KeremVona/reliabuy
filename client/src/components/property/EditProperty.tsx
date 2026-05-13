@@ -178,7 +178,6 @@ export default function EditProperty() {
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                required
                 className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 font-medium placeholder-gray-400"
                 placeholder="e.g., Beautiful Beachfront Villa"
               />
@@ -199,7 +198,6 @@ export default function EditProperty() {
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
-                required
                 className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 font-medium placeholder-gray-400"
                 placeholder="e.g., 123 Ocean Drive, Miami, FL"
               />
@@ -224,7 +222,6 @@ export default function EditProperty() {
                   name="price"
                   value={formData.price}
                   onChange={handleChange}
-                  required
                   min="0"
                   className="w-full pl-10 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 font-bold"
                   placeholder="0.00"
@@ -247,7 +244,6 @@ export default function EditProperty() {
                 rows={6}
                 value={formData.description}
                 onChange={handleChange}
-                required
                 className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 leading-relaxed resize-none"
                 placeholder="Tell buyers about this property..."
               />

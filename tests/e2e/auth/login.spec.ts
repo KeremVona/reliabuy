@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
-import { pool } from "../../test-utils/db"; // Adjust path to your DB utility
 import bcrypt from "bcrypt";
+import { pool } from "../../../test-utils/dbCon";
 
 test.describe("Login & Authorization E2E Tests", () => {
   const testEmail = "test@example.com";
@@ -28,13 +28,13 @@ test.describe("Login & Authorization E2E Tests", () => {
     page,
   }) => {
     // PROCEDURE: Navigate to login and enter credentials [cite: 150, 151]
-    await page.goto("http://localhost:3000/login");
+    await page.goto("http://localhost:5173/login");
     await page.fill('input[name="email"]', testEmail);
     await page.fill('input[name="password"]', rawPassword);
 
     const responsePromise = page.waitForResponse(
       (response) =>
-        response.url().includes("/api/login") &&
+        response.url().includes("http://localhost:5000/api/auth/login") &&
         response.request().method() === "POST",
     );
 
@@ -45,7 +45,7 @@ test.describe("Login & Authorization E2E Tests", () => {
     expect(apiResponse.status()).toBe(200);
 
     // EXPECTED RESULT 2: Redirects to /my-listings [cite: 153]
-    await expect(page).toHaveURL("http://localhost:3000/my-listings");
+    await expect(page).toHaveURL("http://localhost:5173/home");
 
     // EXPECTED RESULT 3: JWT is stored in localStorage [cite: 153]
     const token = await page.evaluate(() => localStorage.getItem("token"));
@@ -60,13 +60,13 @@ test.describe("Login & Authorization E2E Tests", () => {
     page,
   }) => {
     // PROCEDURE: Enter wrong password [cite: 156, 157]
-    await page.goto("http://localhost:3000/login");
+    await page.goto("http://localhost:5173/login");
     await page.fill('input[name="email"]', testEmail);
     await page.fill('input[name="password"]', "WrongPassword!");
 
     const responsePromise = page.waitForResponse(
       (response) =>
-        response.url().includes("/api/login") &&
+        response.url().includes("http://localhost:5000/api/auth/login") &&
         response.request().method() === "POST",
     );
 
@@ -91,14 +91,14 @@ test.describe("Login & Authorization E2E Tests", () => {
     page,
   }) => {
     // PRECONDITION: Ensure localStorage is empty (logged out) [cite: 161]
-    await page.goto("http://localhost:3000/");
+    await page.goto("http://localhost:5173/");
     await page.evaluate(() => localStorage.clear());
 
     // PROCEDURE: Manually navigate to protected route [cite: 163]
-    await page.goto("http://localhost:3000/my-listings");
+    await page.goto("http://localhost:5173/my-listings");
 
     // EXPECTED RESULT: Router immediately redirects back to Login [cite: 164]
-    await expect(page).toHaveURL("http://localhost:3000/login");
+    await expect(page).toHaveURL("http://localhost:5173/login");
   });
 
   // ----------------------------------------------------------------------

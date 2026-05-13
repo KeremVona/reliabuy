@@ -12,6 +12,7 @@ import {
   DollarSign,
   Loader2,
 } from "lucide-react";
+import { useNavigate } from "react-router";
 
 // 1. Define the data structure for the form
 
@@ -25,6 +26,8 @@ export default function MakeProperty() {
 
   const [imageUrlInput, setImageUrlInput] = useState<string>("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+  const navigate = useNavigate();
 
   // 2. Form State
   const [formData, setFormData] = useState<PropertyFormData>({
@@ -133,6 +136,7 @@ export default function MakeProperty() {
           "Content-Type": "multipart/form-data", // Tell browser this is a file upload
         },
       });
+      navigate("/home/");
       alert("Property published with images!");
     } catch (error) {
       console.error(error);

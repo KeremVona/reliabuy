@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
-import { pool } from "../../test-utils/db"; // Adjust path to your DB utility
 import bcrypt from "bcrypt"; // Needed to seed a valid user
+import { pool } from "../../../test-utils/dbCon";
 
 test.describe("Registration E2E Tests", () => {
   const testEmail = "newuser@example.com";
@@ -14,17 +14,19 @@ test.describe("Registration E2E Tests", () => {
     page,
   }) => {
     // PROCEDURE 1: Navigate to the Registration page
-    await page.goto("http://localhost:3000/register");
+    await page.goto("http://localhost:5173/register");
 
     // PROCEDURE 2: Enter valid information
-    await page.fill('input[name="fullName"]', "John Doe");
+    await page.fill('input[name="fullname"]', "John Doe");
     await page.fill('input[name="email"]', testEmail);
     await page.fill('input[name="password"]', "SecurePassword123!");
+    await page.fill('input[name="confirm_password"]', "SecurePassword123!");
+    await page.fill('input[name="city"]', "city1");
 
     // Set up a listener to catch the API response when we click register
     const responsePromise = page.waitForResponse(
       (response) =>
-        response.url().includes("/api/register") &&
+        response.url().includes("http://localhost:5000/api/auth/register") &&
         response.request().method() === "POST",
     );
 
@@ -38,7 +40,7 @@ test.describe("Registration E2E Tests", () => {
     expect(apiResponse.status()).toBe(201);
 
     // EXPECTED RESULT 2: React frontend redirects to the Login page
-    await expect(page).toHaveURL("http://localhost:3000/login");
+    await expect(page).toHaveURL("http://localhost:5173/home");
 
     // EXPECTED RESULT 3: Record inserted into PostgreSQL database
     const dbResult = await pool.query("SELECT * FROM users WHERE email = $1", [
@@ -83,17 +85,19 @@ test.describe("Registration E2E Tests - Errors & Security", () => {
     page,
   }) => {
     // PROCEDURE: Navigate to registration page
-    await page.goto("http://localhost:3000/register");
+    await page.goto("http://localhost:5173/register");
 
     // PROCEDURE: Enter information with an existing email
-    await page.fill('input[name="fullName"]', "Jane Doe");
+    await page.fill('input[name="fullname"]', "Jane Doe");
     await page.fill('input[name="email"]', existingEmail);
     await page.fill('input[name="password"]', "SecurePassword123!");
+    await page.fill('input[name="confirm_password"]', "SecurePassword123!");
+    await page.fill('input[name="city"]', "city1");
 
     // Set up a listener for the API response
     const responsePromise = page.waitForResponse(
       (response) =>
-        response.url().includes("/api/register") &&
+        response.url().includes("http://localhost:5000/api/auth/register") &&
         response.request().method() === "POST",
     );
 
@@ -123,16 +127,18 @@ test.describe("Registration E2E Tests - Errors & Security", () => {
     const maliciousPayload = "Robert'); DROP TABLE users;--";
 
     // PROCEDURE: Navigate to registration page
-    await page.goto("http://localhost:3000/register");
+    await page.goto("http://localhost:5173/register");
 
     // PROCEDURE: Enter malicious payload into the Full Name field
-    await page.fill('input[name="fullName"]', maliciousPayload);
+    await page.fill('input[name="fullname"]', maliciousPayload);
     await page.fill('input[name="email"]', maliciousEmail);
     await page.fill('input[name="password"]', "HackerPassword123!");
+    await page.fill('input[name="confirm_password"]', "HackerPassword123!");
+    await page.fill('input[name="city"]', "city1");
 
     const responsePromise = page.waitForResponse(
       (response) =>
-        response.url().includes("/api/register") &&
+        response.url().includes("http://localhost:5000/api/auth/register") &&
         response.request().method() === "POST",
     );
 

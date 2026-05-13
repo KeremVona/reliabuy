@@ -21,7 +21,7 @@ router.post(
   propertyController.makeProperty,
 );
 router.get("/", propertyController.getAllProperties);
-router.get("/:id", authorize, propertyController.getProperty);
+router.get("/:id", propertyController.getProperty);
 router.put("/:id", authorize, propertyController.updateProperty);
 router.delete("/:id", authorize, propertyController.deleteProperty);
 

@@ -1,30 +1,62 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import * as propertyService from "../../services/property/propertyService";
 import { Property } from "../../interfaces/IProperty";
 
 // MAKE
-export async function makeProperty(req: Request, res: Response): Promise<void> {
+export async function makeProperty(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
-    // Multer puts files in req.files
-    const files = req.files as Express.Multer.File[];
+    // 1. Authorization Check (401)
+    // Avoid the non-null assertion (!) if possible. Validate explicitly so tests can catch it.
+    if (!req.user || !req.user.id) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized: Missing user context.",
+      });
+      return;
+    }
 
-    // Construct the URLs/Paths to store in the DB
+    // 3. Payload Validation Check (400)
+    // Prevent NaN from entering your database if req.body.price is missing or malformed.
+    const price = Number(req.body.price);
+    if (isNaN(price) || price < 0) {
+      res.status(400).json({
+        success: false,
+        message: "Bad Request: A valid positive price is required.",
+      });
+      return;
+    }
+
+    // 4. Data Transformation
+    const files = req.files as Express.Multer.File[];
     const imageUrls = files.map((file) => `/uploads/${file.filename}`);
 
-    // propertyData comes from req.body (strings only)
     const propertyData = {
       ...req.body,
-      user_id: parseInt(req.user!.id),
-      price: Number(req.body.price),
-      images: imageUrls, // Pass the local paths to the service
+      user_id: parseInt(req.user.id, 10), // Always pass radix 10 to parseInt
+      price: price,
+      images: imageUrls,
     };
 
+    // 5. Database / Service Call
     const newProperty = await propertyService.makeProperty(propertyData);
 
+    // 6. Success Response (201)
     res.status(201).json({ success: true, data: newProperty });
   } catch (error) {
     console.error("Error making property:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+
+    // Optional: Differentiate between service/validation errors and actual server crashes
+    if (error instanceof Error && error.name === "ValidationError") {
+      res.status(400).json({ success: false, message: error.message });
+      return;
+    }
+
+    // 7. Server Error (500)
+    res.status(500).json({ success: false, message: "Internal server error." });
   }
 }
 
