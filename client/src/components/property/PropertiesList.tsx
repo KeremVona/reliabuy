@@ -14,6 +14,20 @@ export default function PropertiesList() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [sortOrder, setSortOrder] = useState("default");
+
+  const sortedProperties = [...properties].sort((a, b) => {
+    if (sortOrder === "low-high") {
+      return Number(a.price) - Number(b.price);
+    }
+
+    if (sortOrder === "high-low") {
+      return Number(b.price) - Number(a.price);
+    }
+
+    return 0;
+  });
+
   // 3. Fetch data on component mount
   useEffect(() => {
     const fetchProperties = async () => {
@@ -82,6 +96,21 @@ export default function PropertiesList() {
           <p className="text-lg text-gray-600">
             Browse our latest, verified listings published by our community.
           </p>
+          <div className="mt-6 flex items-center gap-3">
+            <label className="text-sm font-semibold text-gray-700">
+              Sort by Price:
+            </label>
+
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="px-4 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-lime-400"
+            >
+              <option value="default">Default</option>
+              <option value="low-high">Low to High</option>
+              <option value="high-low">High to Low</option>
+            </select>
+          </div>
         </div>
 
         {properties.length === 0 ? (
@@ -95,7 +124,7 @@ export default function PropertiesList() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {properties.map((property) => (
+            {sortedProperties.map((property) => (
               <div
                 key={property.property_id}
                 className="bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 group hover:-translate-y-1 flex flex-col overflow-hidden"
