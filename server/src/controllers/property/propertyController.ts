@@ -1,6 +1,23 @@
 import { NextFunction, Request, Response } from "express";
 import * as propertyService from "../../services/property/propertyService";
 import { Property } from "../../interfaces/IProperty";
+import z from "zod";
+
+export const makePropertySchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(5, "Title must be at least 5 characters.")
+    .max(100, "Title cannot exceed 100 characters."),
+  description: z
+    .string()
+    .trim()
+    .min(20, "Description must be at least 20 characters to attract buyers."),
+  price: z.coerce
+    .number({ message: "Price must be a valid number." })
+    .positive("Price must be greater than zero."),
+  address: z.string().trim().min(5, "Please provide a complete address."),
+});
 
 // MAKE
 export async function makeProperty(
@@ -19,6 +36,10 @@ export async function makeProperty(
       return;
     }
 
+    // 2. Zod Validation (Throws an error if invalid)
+    // This will also coerce req.body.price from a string into a number!
+    const validatedData = makePropertySchema.parse(req.body);
+
     // 3. Payload Validation Check (400)
     // Prevent NaN from entering your database if req.body.price is missing or malformed.
     const price = Number(req.body.price);
@@ -35,9 +56,8 @@ export async function makeProperty(
     const imageUrls = files.map((file) => `/uploads/${file.filename}`);
 
     const propertyData = {
-      ...req.body,
+      ...validatedData,
       user_id: parseInt(req.user.id, 10), // Always pass radix 10 to parseInt
-      price: price,
       images: imageUrls,
     };
 
@@ -49,13 +69,17 @@ export async function makeProperty(
   } catch (error) {
     console.error("Error making property:", error);
 
-    // Optional: Differentiate between service/validation errors and actual server crashes
-    if (error instanceof Error && error.name === "ValidationError") {
-      res.status(400).json({ success: false, message: error.message });
+    // 6. Handle Zod Validation Errors
+    if (error instanceof z.ZodError) {
+      res.status(400).json({
+        success: false,
+        message: "Please check the form for errors.",
+        errors: error.flatten().fieldErrors, // Sends { title: ["Error msg"], price: ["Error msg"] }
+      });
       return;
     }
 
-    // 7. Server Error (500)
+    // 7. Server Error
     res.status(500).json({ success: false, message: "Internal server error." });
   }
 }

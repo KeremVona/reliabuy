@@ -55,6 +55,9 @@ export default function MakeProperty() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // NEW: State to hold Zod field errors from the backend
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+
   // State for AI generation
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
 
@@ -109,6 +112,11 @@ export default function MakeProperty() {
       // Convert price and user_id to numbers, otherwise keep as string
       [name]: name === "price" || name === "user_id" ? Number(value) : value,
     }));
+
+    // Clear the specific error when the user starts typing again
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: [] }));
+    }
   };
 
   // 5. Handle form submission
@@ -117,6 +125,7 @@ export default function MakeProperty() {
     setIsSubmitting(true);
     setErrorMessage(null);
     setSuccessMessage(null);
+    setFieldErrors({}); // Reset previous errors
 
     const data = new FormData();
     data.append("title", formData.title);
@@ -138,8 +147,19 @@ export default function MakeProperty() {
       });
       navigate("/home/");
       alert("Property published with images!");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+
+      // NEW: Catch Axios errors and map Zod validation errors to state
+      if (error.response?.status === 400) {
+        const { message, errors } = error.response.data;
+        if (errors) {
+          setFieldErrors(errors); // Populate field errors
+        }
+        setErrorMessage(message || "Validation failed. Please check the form.");
+      } else {
+        setErrorMessage("An unexpected error occurred. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -196,12 +216,22 @@ export default function MakeProperty() {
                 type="text"
                 name="title"
                 id="title"
-                required
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="e.g., Luxury Condo in Downtown"
-                className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 placeholder-gray-400"
+                // Add conditional red border if error exists
+                className={`w-full bg-gray-50 border-2 rounded-xl px-4 py-3 focus:bg-white focus:outline-none transition-all text-gray-900 placeholder-gray-400 ${
+                  fieldErrors.title
+                    ? "border-red-400 focus:border-red-500"
+                    : "border-gray-100 focus:border-lime-400"
+                }`}
               />
+              {/* Render the specific Zod error for this field */}
+              {fieldErrors.title && (
+                <p className="text-sm text-red-500 font-medium mt-1">
+                  {fieldErrors.title[0]}
+                </p>
+              )}
             </div>
 
             {/* Description Textarea */}
@@ -244,8 +274,17 @@ export default function MakeProperty() {
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="Describe the property's best features, neighborhood, and selling points..."
-                className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 placeholder-gray-400 resize-none"
+                className={`w-full bg-gray-50 border-2 rounded-xl px-4 py-3 focus:bg-white focus:outline-none transition-all text-gray-900 placeholder-gray-400 resize-none ${
+                  fieldErrors.description
+                    ? "border-red-400 focus:border-red-500"
+                    : "border-gray-100 focus:border-lime-400"
+                }`}
               />
+              {fieldErrors.description && (
+                <p className="text-sm text-red-500 font-medium mt-1">
+                  {fieldErrors.description[0]}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
@@ -262,14 +301,22 @@ export default function MakeProperty() {
                   type="number"
                   name="price"
                   id="price"
-                  required
                   min="0"
                   step="0.01"
                   value={formData.price}
                   onChange={handleChange}
                   placeholder="250000"
-                  className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900 font-bold"
+                  className={`w-full bg-gray-50 border-2 rounded-xl px-4 py-3 focus:bg-white focus:outline-none transition-all text-gray-900 font-bold ${
+                    fieldErrors.price
+                      ? "border-red-400 focus:border-red-500"
+                      : "border-gray-100 focus:border-lime-400"
+                  }`}
                 />
+                {fieldErrors.price && (
+                  <p className="text-sm text-red-500 font-medium mt-1">
+                    {fieldErrors.price[0]}
+                  </p>
+                )}
               </div>
 
               {/* Address Input */}
@@ -285,12 +332,20 @@ export default function MakeProperty() {
                   type="text"
                   name="address"
                   id="address"
-                  required
                   value={formData.address}
                   onChange={handleChange}
                   placeholder="123 Main St, Springfield..."
-                  className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-lime-400 focus:bg-white focus:outline-none transition-all text-gray-900"
+                  className={`w-full bg-gray-50 border-2 rounded-xl px-4 py-3 focus:bg-white focus:outline-none transition-all text-gray-900 ${
+                    fieldErrors.address
+                      ? "border-red-400 focus:border-red-500"
+                      : "border-gray-100 focus:border-lime-400"
+                  }`}
                 />
+                {fieldErrors.address && (
+                  <p className="text-sm text-red-500 font-medium mt-1">
+                    {fieldErrors.address[0]}
+                  </p>
+                )}
               </div>
             </div>
 
