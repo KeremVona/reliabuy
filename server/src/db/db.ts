@@ -4,6 +4,6 @@ dotenv.config();
 
 export const pool = new Pool({
   //connectionString: process.env.DATABASE_CONNECTION,
-  connectionString: "postgres://postgres:6853@localhost:5432/reliabuy_test",
+  connectionString: process.env.DATABASE_CONNECTION_TEST,
   // For example, 'postgres://user:password@localhost:5432/mydb'
 });
