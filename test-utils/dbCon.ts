@@ -1,8 +1,14 @@
 import { Pool } from "pg";
 import dotenv from "dotenv";
+import path from "path";
 
 // Load the test environment variables explicitly
-dotenv.config({ path: ".env.test" });
+dotenv.config({ path: path.resolve(__dirname, "../.env.test") });
+
+console.log(
+  "Checking DB_PASSWORD dbcon:",
+  process.env.DB_PASSWORD ? "✅ Defined" : "❌ Undefined",
+);
 
 export const pool = new Pool({
   user: process.env.DB_USER,
