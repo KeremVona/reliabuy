@@ -21,6 +21,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : 1,
+  timeout: 10000,
   use: {
     // Base URL to use in actions like `await page.goto('/')`.
     baseURL: "http://localhost:5173", // Your React Frontend

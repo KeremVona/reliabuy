@@ -1,0 +1,128 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: auth/login.spec.ts >> Login & Authorization E2E Tests - API Middleware Security >> TC-LOG-014: Verify backend rejects improperly formatted Authorization header
+- Location: tests/e2e/auth/login.spec.ts:495:7
+
+# Error details
+
+```
+SyntaxError: Unexpected token 'U', "Unauthoriz"... is not valid JSON
+```
+
+# Test source
+
+```ts
+  416 |     // Note: Adjust this selector based on your exact UI (e.g., a button, a dropdown item)
+  417 |     // await page.click("#logout");
+  418 |     await page.locator("#logout").click();
+  419 | 
+  420 |     // EXPECTED RESULT 1: User is immediately redirected to /login (or /)
+  421 |     await expect(page).toHaveURL("http://localhost:5173/login");
+  422 | 
+  423 |     // EXPECTED RESULT 2: The localStorage token is completely removed
+  424 |     const token = await page.evaluate(() => localStorage.getItem("token"));
+  425 |     expect(token).toBeNull();
+  426 |   });
+  427 | 
+  428 |   // ----------------------------------------------------------------------
+  429 | 
+  430 |   test("TC-LOG-012: Verify frontend handles an expired/invalid JWT gracefully", async ({
+  431 |     page,
+  432 |   }) => {
+  433 |     // Make a structurally valid but artificially expired JWT
+  434 |     // Header = HS256, Payload = { "exp": 1577836800 } (Jan 1, 2020), Signature = dummy
+  435 |     const expiredToken =
+  436 |       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Nzc4MzY4MDB9.dummySignature";
+  437 | 
+  438 |     // PROCEDURE 1: Navigate to the app domain to initialize localStorage context
+  439 |     await page.goto("http://localhost:5173/");
+  440 | 
+  441 |     // PROCEDURE 2: Inject the expired token into localStorage
+  442 |     await page.evaluate((token) => {
+  443 |       localStorage.setItem("token", token);
+  444 |     }, expiredToken);
+  445 | 
+  446 |     // Optional: We can intercept the API call to force a 401 response just in case
+  447 |     // the backend doesn't handle the dummy signature the way we expect.
+  448 |     await page.route("**/api/**", (route) => {
+  449 |       route.fulfill({
+  450 |         status: 401,
+  451 |         contentType: "application/json",
+  452 |         body: JSON.stringify({ message: "Token expired or invalid" }),
+  453 |       });
+  454 |     });
+  455 | 
+  456 |     // PROCEDURE 3: Attempt to navigate to a protected route
+  457 |     await page.goto("http://localhost:5173/publish");
+  458 | 
+  459 |     // EXPECTED RESULT 1: The frontend forces a redirect to /login due to the 401 response
+  460 |     await expect(page).toHaveURL("http://localhost:5173/login");
+  461 | 
+  462 |     // EXPECTED RESULT 2: The frontend clears the invalid token from localStorage
+  463 |     const clearedToken = await page.evaluate(() =>
+  464 |       localStorage.getItem("token"),
+  465 |     );
+  466 |     expect(clearedToken).toBeNull();
+  467 |   });
+  468 | });
+  469 | 
+  470 | test.describe("Login & Authorization E2E Tests - API Middleware Security", () => {
+  471 |   // Note: We do not need a before/after hook to seed a user here,
+  472 |   // because the middleware should block these requests before it
+  473 |   // even attempts to query the database for user details.
+  474 | 
+  475 |   test("TC-LOG-013: Verify backend rejects missing Authorization header", async ({
+  476 |     request,
+  477 |   }) => {
+  478 |     // PROCEDURE: Send a direct GET request to a protected endpoint with NO headers
+  479 |     const response = await request.get(
+  480 |       "http://localhost:5000/api/property/my-listings",
+  481 |     );
+  482 | 
+  483 |     // EXPECTED RESULT 1: The backend middleware intercepts the request and returns 401 Unauthorized
+  484 |     expect(response.status()).toBe(401);
+  485 | 
+  486 |     // EXPECTED RESULT 2: Verify the JSON payload contains an appropriate error message
+  487 |     // (Adjust the exact expected text based on how your Express middleware formats errors)
+  488 |     const responseBody = await response.json();
+  489 |     expect(responseBody).toHaveProperty("message");
+  490 |     // Example: expect(responseBody.message).toMatch(/no token provided|unauthorized/i);
+  491 |   });
+  492 | 
+  493 |   // ----------------------------------------------------------------------
+  494 | 
+  495 |   test("TC-LOG-014: Verify backend rejects improperly formatted Authorization header", async ({
+  496 |     request,
+  497 |   }) => {
+  498 |     // Make a technically valid JWT format, but we will send it without the "Bearer " prefix
+  499 |     const dummyToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy.signature";
+  500 | 
+  501 |     // PROCEDURE: Send request with an improperly formatted Authorization header
+  502 |     const response = await request.get(
+  503 |       "http://localhost:5000/api/property/my-listings",
+  504 |       {
+  505 |         headers: {
+  506 |           // Missing the "Bearer " prefix
+  507 |           Authorization: dummyToken,
+  508 |         },
+  509 |       },
+  510 |     );
+  511 | 
+  512 |     // EXPECTED RESULT 1: Middleware strictly enforces the "Bearer <token>" format and rejects this
+  513 |     expect(response.status()).toBe(401);
+  514 | 
+  515 |     // EXPECTED RESULT 2: Verify the error message clarifies the format issue (Optional but recommended)
+> 516 |     const responseBody = await response.json();
+      |                          ^ SyntaxError: Unexpected token 'U', "Unauthoriz"... is not valid JSON
+  517 |     expect(responseBody).toHaveProperty("message");
+  518 |     // Example: expect(responseBody.message).toMatch(/invalid token format|bearer/i);
+  519 |   });
+  520 | });
+  521 | 
+```

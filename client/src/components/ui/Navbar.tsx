@@ -83,6 +83,7 @@ const Navbar: React.FC = () => {
               onClick={handleLogout}
               className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
               title="Log Out"
+              id="logout"
             >
               <LogOut size={20} />
             </button>
@@ -135,6 +136,7 @@ const Navbar: React.FC = () => {
                   setIsMobileMenuOpen(false);
                   handleLogout();
                 }}
+                id="logout"
                 className="flex items-center justify-center gap-2 w-full text-left px-4 py-4 rounded-xl text-red-600 font-bold hover:bg-red-50 transition-colors"
               >
                 <LogOut size={20} />

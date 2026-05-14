@@ -109,7 +109,9 @@ test.describe("Registration E2E Tests - Errors & Security", () => {
     expect([400, 409]).toContain(apiResponse.status());
 
     // EXPECTED RESULT 2: The app does not crash, and a user-friendly error is displayed
-    const errorMessage = page.locator("text=Email already in use");
+    const errorMessage = page.locator(
+      "text=A user with this email already exists.",
+    );
     await expect(errorMessage).toBeVisible();
 
     // Verify the user was NOT added a second time
@@ -194,6 +196,79 @@ test.describe("Registration E2E Tests - Input Validation & Business Rules", () =
     // await expect(requiredError).toBeVisible();
   });
 
+  test.describe("TC-REG-013: Mandatory Field Validation", () => {
+    test.beforeEach(async ({ page }) => {
+      await page.goto("http://localhost:5173/register");
+    });
+
+    const testCases = [
+      {
+        missingField: "fullname",
+        fill: {
+          email: "test@example.com",
+          password: "Password123!",
+          city: "New York",
+        },
+      },
+      {
+        missingField: "email",
+        fill: {
+          fullName: "John Doe",
+          password: "Password123!",
+          city: "London",
+        },
+      },
+      {
+        missingField: "password",
+        fill: {
+          fullName: "John Doe",
+          email: "test@example.com",
+          city: "Tokyo",
+        },
+      },
+      {
+        missingField: "city",
+        fill: {
+          fullName: "John Doe",
+          email: "test@example.com",
+          password: "Password123!",
+        },
+      },
+    ];
+
+    for (const scenario of testCases) {
+      test(`Verify registration fails when ${scenario.missingField} is missing`, async ({
+        page,
+      }) => {
+        // Step 1: Fill all fields EXCEPT the missing one
+        if (scenario.fill.fullName)
+          await page.fill('input[name="fullname"]', scenario.fill.fullName);
+        if (scenario.fill.email)
+          await page.fill('input[name="email"]', scenario.fill.email);
+        if (scenario.fill.password)
+          await page.fill('input[name="password"]', scenario.fill.password);
+        if (scenario.fill.city)
+          await page.fill('input[name="city"]', scenario.fill.city);
+
+        // Step 2: Attempt submission
+        await page.click('button[type="submit"]');
+
+        // Step 3: Assertions
+        // Ensure we haven't redirected to a dashboard/success page
+        await expect(page).toHaveURL("http://localhost:5173/register");
+
+        // Check validation state for the specific missing field
+        const missingInput = page.locator(
+          `input[name="${scenario.missingField}"]`,
+        );
+        const isValid = await missingInput.evaluate((el: HTMLInputElement) =>
+          el.checkValidity(),
+        );
+
+        expect(isValid).toBe(false);
+      });
+    }
+  });
   // ----------------------------------------------------------------------
 
   test("TC-REG-005: Verify registration fails with invalid email formats", async ({
@@ -398,7 +473,9 @@ test.describe("Registration E2E Tests - Data Sanitization & Edge Cases", () => {
     expect([400, 409]).toContain(apiResponse.status());
 
     // EXPECTED RESULT 2: User is notified and stays on the page
-    const errorMessage = page.locator("text=Email already in use");
+    const errorMessage = page.locator(
+      "text=A user with this email already exists.",
+    );
     await expect(errorMessage).toBeVisible();
   });
 
@@ -523,12 +600,12 @@ test.describe("Registration E2E Tests - Security & Rate Limiting", () => {
 
   // ----------------------------------------------------------------------
 
-  test("TC-REG-012: Verify rate limiting prevents brute-force account creation (Spam/DoS)", async ({
+  test("TC-REG-012: Verify rate limiting prevents brute-force account making (Spam/DoS)", async ({
     request, // Using Playwright's APIRequestContext instead of UI for raw speed
   }) => {
     const maxRequests = 15; // Set higher than your expected threshold
     let received429Error = false;
-    const statusCodes = [];
+    const statusCodes: number[] = [];
 
     // PROCEDURE: Blast the endpoint with rapid, consecutive POST requests
     for (let i = 0; i < maxRequests; i++) {
