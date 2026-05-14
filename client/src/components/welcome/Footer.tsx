@@ -15,7 +15,7 @@ const Footer: React.FC = () => {
           {/* Column 1: Brand */}
           <div className="flex flex-col">
             <h2 className="text-2xl font-bold text-white tracking-wider uppercase mb-4">
-              Real-XT
+              Reliabuy
             </h2>
             <p className="text-gray-400 leading-relaxed mb-6">
               The smartest way to buy, sell, and track real estate. Skip the
@@ -91,7 +91,7 @@ const Footer: React.FC = () => {
                   href="mailto:support@realxt.com"
                   className="hover:text-lime-400 transition-colors"
                 >
-                  support@realxt.com
+                  support@reliabuy.com
                 </a>
               </li>
             </ul>
@@ -123,8 +123,8 @@ const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-gray-500 text-sm text-center md:text-left">
-            © {currentYear} Real-XT. Designed & Developed by Chandrika. All
-            rights reserved.
+            © {currentYear} Reliabuy. Developed by Commented Code. All rights
+            reserved.
           </p>
           <div className="flex items-center gap-6 text-sm text-gray-500">
             <a href="#" className="hover:text-white transition-colors">

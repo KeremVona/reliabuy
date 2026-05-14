@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { SavedProperty } from "../../interfaces/Property";
 import Navbar from "../ui/Navbar";
+import toast from "react-hot-toast";
 
 export default function SavedProperties() {
   const [properties, setProperties] = useState<SavedProperty[]>([]);
@@ -56,7 +57,7 @@ export default function SavedProperties() {
       setProperties((prev) => prev.filter((property) => property.id !== id));
     } catch (err) {
       console.error("Failed to unsave property:", err);
-      alert("Could not remove the property. Please try again.");
+      toast.error("Could not remove the property. Please try again.");
     }
   };
 
@@ -130,7 +131,7 @@ export default function SavedProperties() {
             {properties.map((property) => (
               <div
                 key={property.id}
-                onClick={() => navigate(`/property/${property.id}`)}
+                onClick={() => navigate(`/property/:${property.id}`)}
                 className="group relative bg-white rounded-3xl border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-500 cursor-pointer flex flex-col hover:-translate-y-2"
               >
                 {/* Image Section */}

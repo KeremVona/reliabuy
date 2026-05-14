@@ -34,7 +34,7 @@ const HowItWorks: React.FC = () => {
   const sellerSteps = [
     {
       title: "List in Minutes",
-      description: "Upload up to 10 high-resolution images and set your price.",
+      description: "Upload up to 10 resolution images and set your price.",
       icon: <ImagePlus size={24} />,
     },
     {

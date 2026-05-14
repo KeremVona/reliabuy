@@ -11,12 +11,23 @@ import {
   Home,
   ExternalLink,
   ArrowRight,
+  AlertTriangle,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 const MyListings: React.FC = () => {
   const [listings, setListings] = useState<Property[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [propertyToDelete, setPropertyToDelete] = useState<number | null>(null);
+
+  // Update your button click handler to open the modal instead of deleting immediately:
+  const initiateDelete = (id: number) => {
+    setPropertyToDelete(id);
+    setDeleteModalOpen(true);
+  };
 
   useEffect(() => {
     const fetchMyListings = async () => {
@@ -45,27 +56,32 @@ const MyListings: React.FC = () => {
     fetchMyListings();
   }, []);
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this listing?"))
-      return;
+  const handleDelete = async () => {
+    if (!propertyToDelete) return;
 
     const token = localStorage.getItem("token");
 
     try {
       // 1. Perform the delete request
       // The second argument is the config object containing headers
-      await axios.delete(`http://localhost:5000/api/property/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      await axios.delete(
+        `http://localhost:5000/api/property/${propertyToDelete}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
+      // 2. Update the UI using the state variable
+      setListings(listings.filter((item) => item.id !== propertyToDelete));
 
-      // 2. Only if the request succeeds, update the UI
-      setListings(listings.filter((item) => item.id !== id));
+      // 3. Close modal and reset state
+      setDeleteModalOpen(false);
+      setPropertyToDelete(null);
 
-      alert("Property deleted successfully");
+      toast.success("Property deleted successfully");
     } catch (err) {
-      alert("Delete failed");
+      toast.error("Delete failed");
     }
   };
 
@@ -178,7 +194,7 @@ const MyListings: React.FC = () => {
                       <span className="text-sm">Edit</span>
                     </Link>
                     <button
-                      onClick={() => handleDelete(item.id!)}
+                      onClick={() => initiateDelete(item.id!)}
                       className="flex items-center gap-2 px-5 py-2.5 bg-white text-red-500 border border-red-50 rounded-xl hover:bg-red-500 hover:text-white hover:border-red-500 transition-all font-bold"
                     >
                       <Trash2 size={16} />
@@ -191,6 +207,43 @@ const MyListings: React.FC = () => {
           </div>
         )}
       </div>
+      {/* --- DELETE CONFIRMATION MODAL --- */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 transform transition-all animate-in fade-in zoom-in-95 duration-200 border border-gray-100 text-center">
+            {/* Warning Icon */}
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-6">
+              <AlertTriangle className="h-8 w-8 text-red-500" strokeWidth={2} />
+            </div>
+
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              Delete Listing?
+            </h3>
+            <p className="text-gray-500 mb-8 leading-relaxed text-sm">
+              Are you sure you want to permanently remove this property? This
+              action cannot be undone and will remove all associated offers.
+            </p>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  setDeleteModalOpen(false);
+                  setPropertyToDelete(null);
+                }}
+                className="flex-1 py-4 text-gray-600 font-bold bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors border border-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex-1 py-4 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-all shadow-md hover:shadow-lg active:scale-95"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

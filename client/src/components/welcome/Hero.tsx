@@ -19,7 +19,7 @@ const Hero: React.FC = () => {
         {/* Overlay Navbar */}
         <nav className="absolute top-0 left-0 w-full z-20 flex items-center justify-between px-8 py-5 bg-transparent">
           {/* Left Nav Links */}
-          <ul className="hidden md:flex items-center gap-6 text-white font-normal text-sm tracking-wide">
+          {/*<ul className="hidden md:flex items-center gap-6 text-white font-normal text-sm tracking-wide">
             <li>
               <a href="#about" className="hover:text-lime-300 transition">
                 About Us
@@ -40,7 +40,7 @@ const Hero: React.FC = () => {
                 Blogs
               </a>
             </li>
-          </ul>
+          </ul>*/}
 
           {/* Center Logo (absolutely centered) */}
           <div className="absolute left-1/2 transform -translate-x-1/2">

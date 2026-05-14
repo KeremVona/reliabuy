@@ -13,6 +13,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useNavigate } from "react-router";
+import toast from "react-hot-toast";
 
 // 1. Define the data structure for the form
 
@@ -64,7 +65,7 @@ export default function MakeProperty() {
   // Handle AI Description Generation
   const handleGenerateDescription = async () => {
     if (selectedFiles.length === 0) {
-      alert(
+      toast.error(
         "Please select some images first so the AI has something to analyze!",
       );
       return;
@@ -96,7 +97,7 @@ export default function MakeProperty() {
       }));
     } catch (error) {
       console.error("AI Generation failed", error);
-      alert("Failed to generate description. Please try again.");
+      toast.error("Failed to generate description. Please try again.");
     } finally {
       setIsGenerating(false);
     }
@@ -145,8 +146,8 @@ export default function MakeProperty() {
           "Content-Type": "multipart/form-data", // Tell browser this is a file upload
         },
       });
-      navigate("/home/");
-      alert("Property published with images!");
+      toast.success("Property published successfully!");
+      setTimeout(() => navigate("/home"), 1500);
     } catch (error: any) {
       console.error(error);
 

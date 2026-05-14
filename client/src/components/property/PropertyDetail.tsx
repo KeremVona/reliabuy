@@ -4,6 +4,7 @@ import { ArrowLeft, DollarSign, Heart, ImageOff, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { PropertyDetailData } from "../../interfaces/Property";
+import toast from "react-hot-toast";
 
 // 1. Define the TypeScript interface
 // Note: This matches the basic Property interface from your backend.
@@ -103,7 +104,7 @@ export default function PropertyDetail() {
       }
     } catch (err) {
       console.error("Failed to toggle favorite:", err);
-      alert("Could not update saved properties. Try again.");
+      toast.error("Could not update saved properties. Try again.");
     } finally {
       setIsSaving(false);
     }
@@ -127,12 +128,12 @@ export default function PropertyDetail() {
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      alert("Offer sent successfully!");
+      toast.success("Offer sent successfully!");
       setIsOfferModalOpen(false);
       setOfferAmount("");
     } catch (err) {
       console.error("Offer failed:", err);
-      alert("Failed to send offer. Try again.");
+      toast.error("Failed to send offer. Try again.");
     } finally {
       setIsSubmitting(false);
     }
