@@ -1,10 +1,9 @@
-import express, { type Express } from "express";
 import cors from "cors";
-import userRoutes from "./routes/auth/userRoutes";
-import propertyRoutes from "./routes/property/propertyRoutes";
-import offerRoutes from "./routes/offer/offerRoutes";
+import express, { type Express } from "express";
 import path from "path";
-import multer from "multer";
+import userRoutes from "./routes/auth/userRoutes";
+import offerRoutes from "./routes/offer/offerRoutes";
+import propertyRoutes from "./routes/property/propertyRoutes";
 
 export const app: Express = express();
 
