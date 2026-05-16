@@ -1,17 +1,18 @@
 import express from "express";
+import { loginLimiter, registerLimiter } from "../../middleware/rateLimiters";
 import {
-  registerHandler,
-  loginHandler,
-  verifyHandler,
   getUserIdHandler,
+  loginHandler,
+  registerHandler,
+  verifyHandler,
 } from "../../controllers/auth/userController";
-import validInfo from "../../middleware/validInfo";
 import authorize from "../../middleware/authorization";
+import validInfo from "../../middleware/validInfo";
 
 const router = express.Router();
 
-router.post("/register", validInfo, registerHandler);
-router.post("/login", validInfo, loginHandler);
+router.post("/register", validInfo, registerLimiter, registerHandler);
+router.post("/login", validInfo, loginLimiter, loginHandler);
 router.post("/verify", authorize, verifyHandler);
 router.post("/user-id", authorize, getUserIdHandler);
 
