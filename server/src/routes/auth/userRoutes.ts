@@ -12,7 +12,7 @@ import validInfo from "../../middleware/validInfo";
 const router = express.Router();
 
 router.post("/register", validInfo, registerLimiter, registerHandler);
-router.post("/login", validInfo, loginLimiter, loginHandler);
+router.post("/login", validInfo, loginHandler);
 router.post("/verify", authorize, verifyHandler);
 router.post("/user-id", authorize, getUserIdHandler);
 
