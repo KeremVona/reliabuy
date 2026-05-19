@@ -4,6 +4,9 @@ import {
   seedTestUser,
   seedTestProperty,
 } from "../../../test-utils/db";
+import { pool } from "../../../test-utils/dbCon";
+
+test.describe.configure({ mode: "serial" });
 
 test.describe("Property Deletion & Security", () => {
   let ownerToken: string;
@@ -134,5 +137,23 @@ test.describe("Property Deletion & Security", () => {
     expect(deleteResponse.status()).toBe(400);
     const apiBody = await deleteResponse.json();
     expect(apiBody.message).toBe("Invalid property ID format");
+  });
+
+  test("TC-FUNC-DEL-005: Server blocks unauthenticated users from deleting (401 Unauthorized)", async ({
+    request,
+  }) => {
+    // Notice: We do NOT include the Authorization header here
+    const apiResponse = await request.delete(
+      `http://localhost:5000/api/property/${propertyId}`,
+    );
+
+    expect(apiResponse.status()).toBe(401);
+
+    // Verify the database was untouched
+    const propCheck = await pool.query(
+      "SELECT * FROM properties WHERE id = $1",
+      [propertyId],
+    );
+    expect(propCheck.rows.length).toBe(1);
   });
 });

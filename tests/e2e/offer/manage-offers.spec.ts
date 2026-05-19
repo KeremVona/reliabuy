@@ -4,6 +4,7 @@ import {
   seedTestProperty,
   seedTestUser,
 } from "../../../test-utils/db";
+import { pool } from "../../../test-utils/dbCon";
 
 test.describe("Making and Responding to Offers", () => {
   let sellerToken: string;
@@ -68,6 +69,7 @@ test.describe("Making and Responding to Offers", () => {
       title: "Dream Home",
       price: 600000,
     });
+    // console.log("manage-offers ", propertyId);
 
     // 4. Pre-seed one offer to test the Accept/Reject logic
     const offerResponse = await request.post(
@@ -84,6 +86,7 @@ test.describe("Making and Responding to Offers", () => {
   test("TC-FUNC-OFF-004: Buyer can successfully submit a new offer", async ({
     request,
   }) => {
+    await pool.query("DELETE FROM offers WHERE id = $1", [seededOfferId]);
     const response = await request.post("http://localhost:5000/api/offer", {
       headers: { Authorization: `Bearer ${buyerToken}` },
       data: { amount: 580000, propertyId: propertyId },
@@ -92,7 +95,7 @@ test.describe("Making and Responding to Offers", () => {
     expect(response.status()).toBe(201);
     const body = await response.json();
 
-    expect(body.amount).toBe("580000.00"); // Or number, depending on pg driver parsing
+    expect(Number(body.amount)).toBe(580000);
     expect(body.property_id).toBe(propertyId);
     expect(body.status).toBe("PENDING"); // Assuming your DB defaults to PENDING
   });

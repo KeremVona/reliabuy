@@ -65,6 +65,7 @@ export const seedTestProperty = async (data: any) => {
     price,
     address,
   ]);
+  // console.log("--result.rows[0].id", result.rows[0].id);
   return result.rows[0].id;
 };
 

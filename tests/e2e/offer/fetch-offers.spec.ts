@@ -90,7 +90,7 @@ test.describe("Fetching Offers", () => {
 
     // Check that we got exactly the 1 offer made on Property 1
     expect(body.length).toBe(1);
-    expect(body[0].amount).toBe("480000"); // Depending on numeric mapping in pg, might be string or number
+    expect(body[0].amount).toBe("480000.00");
     expect(body[0].property_id).toBe(propertyId1);
 
     // Check that the SQL JOIN successfully grabbed the buyer's name

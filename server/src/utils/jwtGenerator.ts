@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: "../../.env", quiet: true });
 
+//dotenv.config();
+
 function jwtGenerator(user_id: string, user_name: string) {
   const payload = {
     user: {

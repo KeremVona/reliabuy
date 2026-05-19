@@ -53,6 +53,15 @@ export async function makeProperty(
 
     // 4. Data Transformation
     const files = req.files as Express.Multer.File[];
+
+    if (files.length > 10) {
+      res.status(400).json({
+        success: false,
+        message: "Too many files. Maximum allowed is 10.",
+      });
+      return;
+    }
+
     const imageUrls = files.map((file) => `/uploads/${file.filename}`);
 
     const propertyData = {
@@ -142,6 +151,21 @@ export async function updateProperty(
       //return;
     }
 
+    const existingProperty = await propertyService.getPropertyById(propertyId);
+
+    if (!existingProperty) {
+      res.status(404).json({ success: false, message: "Property not found" });
+      return;
+    }
+
+    if (existingProperty.user_id !== parseInt(req.user!.id)) {
+      res.status(403).json({
+        success: false,
+        message: "Unauthorized: You can only edit your own properties.",
+      });
+      return;
+    }
+
     if (!validationResult.success) {
       // 3. Send detailed validation errors back to the frontend
       // .flatten().fieldErrors transforms Zod errors into a clean object:
@@ -157,20 +181,6 @@ export async function updateProperty(
     // 4. Extract the clean, validated data
     const validatedData = validationResult.data;
 
-    const existingProperty = await propertyService.getPropertyById(propertyId);
-
-    if (!existingProperty) {
-      res.status(404).json({ success: false, message: "Property not found" });
-      return;
-    }
-
-    if (existingProperty.user_id !== parseInt(req.user!.id)) {
-      res.status(403).json({
-        success: false,
-        message: "Unauthorized: You can only edit your own properties.",
-      });
-      return;
-    }
     // 5. Merge the existing property with the newly validated data
     // This satisfies TypeScript by providing the required user_id and any other fields
     const fullPropertyData: Property = {
@@ -283,7 +293,14 @@ export const handleSearch = async (req: Request, res: Response) => {
 
 export const getMyProperties = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.id;
+    // const userId = req.user?.id;
+
+    // const userId = parseInt(req.user!.id, 10);
+
+    const userId = Number(req.user?.id);
+    console.log("userId ", userId);
+    console.log("userId 2 ", req.user?.id);
+    console.log("userId 3 ", parseInt(req.user!.id), 10);
 
     if (!userId) {
       return res.status(401).json({
@@ -292,9 +309,7 @@ export const getMyProperties = async (req: Request, res: Response) => {
       });
     }
 
-    const properties = await propertyService.getUserProperties(
-      parseInt(userId),
-    );
+    const properties = await propertyService.getUserProperties(userId);
 
     res.status(200).json({
       success: true,
@@ -320,6 +335,16 @@ export const saveProperty = async (
 
     if (isNaN(propertyId)) {
       res.status(400).json({ success: false, message: "Invalid property ID" });
+      return;
+    }
+
+    const property = await propertyService.getPropertyById(propertyId);
+
+    if (!property) {
+      res.status(404).json({
+        success: false,
+        message: "Property not found",
+      });
       return;
     }
 

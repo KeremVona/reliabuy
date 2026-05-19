@@ -56,10 +56,7 @@ function App() {
 
           {/* Main Routes */}
           <Route path="/home" element={<Home />} />
-          <Route
-            path="/property/:id"
-            element={<ProtectedRoute content={<PropertyDetail />} />}
-          />
+          <Route path="/property/:id" element={<PropertyDetail />} />
           <Route
             path="/publish"
             element={<ProtectedRoute content={<MakeProperty />} />}

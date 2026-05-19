@@ -113,18 +113,27 @@ export const loginHandler = async (
     // Validate incoming request body
     const { email, password } = loginSchema.parse(req.body);
 
-    console.log(password);
+    // console.log(password);
+    // console.log(email);
 
     const user = await loginUser(email, password);
+    // console.log("user ", user);
 
     if (!user) {
       // Consistent JSON error response
       return res.status(401).json({ error: "Invalid email or password" });
     }
-
+    // console.log("SECRET:", process.env.Secret);
     const jwtToken = jwtGenerator(String(user.id), user.fullname);
 
+    if (!jwtToken) {
+      return res.status(500).json({
+        error: "Failed to generate token",
+      });
+    }
+
     // Consistent success response
+    // console.log("-------- Succesful login --------", email, password);
     return res.status(200).json({ jwtToken });
   } catch (err: unknown) {
     // Handle Zod validation errors cleanly

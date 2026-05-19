@@ -6,6 +6,7 @@ dotenv.config({ path: "../../.env", quiet: true });
 
 export default function (req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
+  // console.log(req.headers.authorization);
 
   const token = authHeader?.split(" ")[1];
 

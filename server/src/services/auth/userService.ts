@@ -60,7 +60,7 @@ export async function loginUser(
       return null;
     }
 
-    console.log(passwordAttempt);
+    // console.log(passwordAttempt);
 
     // 2. Compare the provided password with the stored hash
     const isPasswordValid = await bcrypt.compare(

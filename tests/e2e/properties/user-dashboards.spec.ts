@@ -27,7 +27,12 @@ test.describe("User Dashboards (My Listings & Saved Properties)", () => {
     const loginA = await request.post("http://localhost:5000/api/auth/login", {
       data: { email: "userA@example.com", password: "password123" },
     });
+
+    console.log("test2", loginA.status());
+    // expect(loginA.status()).toBe(200);
+
     userAToken = (await loginA.json()).jwtToken;
+    console.log("test", await loginA.json());
 
     // 3. Seed User B
     const userBData = await seedTestUser(
@@ -138,5 +143,24 @@ test.describe("User Dashboards (My Listings & Saved Properties)", () => {
       "http://localhost:5000/api/property/saved",
     );
     expect(response.status()).toBe(401);
+  });
+
+  test("TC-FUNC-MYSAVED-003: Authenticated user retrieves an empty array when no properties are saved", async ({
+    request,
+  }) => {
+    // User B has not favorited any properties during setup
+    const response = await request.get(
+      "http://localhost:5000/api/property/saved",
+      {
+        headers: { Authorization: `Bearer ${userBToken}` },
+      },
+    );
+
+    expect(response.status()).toBe(200);
+    const responseBody = await response.json();
+
+    // EXPECTED: Safely returns an empty array instead of null or crashing
+    expect(responseBody.count).toBe(0);
+    expect(responseBody.data).toEqual([]);
   });
 });

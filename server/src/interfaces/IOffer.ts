@@ -11,6 +11,6 @@ export interface Offer {
 
 export interface MakeOfferDTO {
   amount: number;
-  property_id: number;
+  propertyId: number;
   buyer_id: number;
 }

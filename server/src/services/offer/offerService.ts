@@ -10,7 +10,7 @@ export const makeOffer = async (data: MakeOfferDTO): Promise<Offer> => {
     VALUES ($1, $2, $3)
     RETURNING *;
   `;
-  const values = [data.amount, data.property_id, data.buyer_id];
+  const values = [data.amount, data.propertyId, data.buyer_id];
   const { rows } = await pool.query(query, values);
   return rows[0];
 };
@@ -33,10 +33,24 @@ export const getOffersByProperty = async (
     FROM offers o
     JOIN users u ON o.buyer_id = u.id
     WHERE o.property_id = $1
-    ORDER BY o.created_at DESC;
+    ORDER BY o.made_at DESC;
   `;
   const { rows } = await pool.query(query, [propertyId]);
   return rows;
+};
+
+export const getOfferByBuyerAndProperty = async (
+  buyerId: number,
+  propertyId: number,
+) => {
+  const query = `
+    SELECT * FROM offers 
+    WHERE buyer_id = $1 AND property_id = $2
+    ORDER BY made_at DESC, id DESC
+    LIMIT 1;
+  `;
+  const result = await pool.query(query, [buyerId, propertyId]);
+  return result.rows[0] || null; // Returns the offer or null if none exists
 };
 
 /**
@@ -62,9 +76,9 @@ export const updateOfferStatus = async (
  */
 export const getOfferOwnership = async (
   offerId: number,
-): Promise<{ owner_id: number } | null> => {
+): Promise<{ owner_id: number; current_status: string } | null> => {
   const query = `
-    SELECT p.user_id as owner_id 
+    SELECT p.user_id as owner_id, o.status as current_status 
     FROM offers o
     JOIN properties p ON o.property_id = p.id
     WHERE o.id = $1;

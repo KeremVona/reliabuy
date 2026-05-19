@@ -139,4 +139,42 @@ test.describe("Favorites (Save/Unsave Properties)", () => {
     const apiBody = await saveResponse.json();
     expect(apiBody.message).toBe("Invalid property ID");
   });
+
+  test("TC-FUNC-FAV-005: Server prevents/handles duplicate favorites gracefully", async ({
+    request,
+  }) => {
+    // 1. User favorites the property for the FIRST time
+    await request.post(
+      `http://localhost:5000/api/property/${propertyId}/favorite`,
+      {
+        headers: { Authorization: `Bearer ${userToken}` },
+      },
+    );
+
+    // 2. User attempts to favorite the exact same property AGAIN
+    const duplicateResponse = await request.post(
+      `http://localhost:5000/api/property/${propertyId}/favorite`,
+      {
+        headers: { Authorization: `Bearer ${userToken}` },
+      },
+    );
+
+    // EXPECTED: Server should not crash with a 500 PostgreSQL Unique Constraint error.
+    expect([400, 409, 200]).toContain(duplicateResponse.status());
+  });
+
+  test("TC-FUNC-FAV-006: Server returns 404 when attempting to favorite a non-existent property", async ({
+    request,
+  }) => {
+    // Attempt to favorite a property ID that does not exist
+    const response = await request.post(
+      `http://localhost:5000/api/property/99999/favorite`,
+      {
+        headers: { Authorization: `Bearer ${userToken}` },
+      },
+    );
+
+    // EXPECTED: Graceful 404 handling
+    expect(response.status()).toBe(404);
+  });
 });
