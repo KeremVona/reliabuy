@@ -14,7 +14,8 @@
     "test:favorites": "cross-env PLAYWRIGHT_HTML_REPORT=functional-test-reports/favorites npx playwright test tests/e2e/properties/favorites.spec.ts --reporter=html",
     "test:user-dashboards": "cross-env PLAYWRIGHT_HTML_REPORT=functional-test-reports/user-dashboards npx playwright test tests/e2e/properties/user-dashboards.spec.ts --reporter=html",
     "test:fetch-offers": "cross-env PLAYWRIGHT_HTML_REPORT=functional-test-reports/fetch-offers npx playwright test tests/e2e/offer/fetch-offers.spec.ts --reporter=html",
-    "test:manage-offers": "cross-env PLAYWRIGHT_HTML_REPORT=functional-test-reports/manage-offers npx playwright test tests/e2e/offer/manage-offers.spec.ts --reporter=html"
+    "test:manage-offers": "cross-env PLAYWRIGHT_HTML_REPORT=functional-test-reports/manage-offers npx playwright test tests/e2e/offer/manage-offers.spec.ts --reporter=html",
+    "test:search": "cross-env PLAYWRIGHT_HTML_REPORT=functional-test-reports/manage-offers npx playwright test tests/e2e/properties/search.spec.ts --reporter=html"
   },
   "repository": {
     "type": "git",

@@ -1,13 +1,47 @@
 import { expect, test } from "@playwright/test";
-import { clearDatabase, seedTestProperty } from "../../../test-utils/db";
+import {
+  clearDatabase,
+  seedTestProperty,
+  seedTestUser,
+} from "../../../test-utils/db";
 
 test.describe("Global Property Search", () => {
-  test.beforeEach(async () => {
+  let ownerToken: string;
+  let ownerId: number;
+
+  test.beforeEach(async ({ request }) => {
     // 1. Wipe the test database
     await clearDatabase();
 
+    const ownerData = await seedTestUser(
+      "owner@example.com",
+      "pAssword123",
+      "fullname",
+      "city",
+    );
+    ownerId = ownerData.id;
+
+    // Authenticate the owner to get their JWT
+    const ownerLogin = await request.post(
+      "http://localhost:5000/api/auth/login",
+      {
+        data: { email: "owner@example.com", password: "pAssword123" },
+      },
+    );
+
+    console.log("test2", ownerLogin.status());
+
+    console.log("test", await ownerLogin.json());
+    ownerToken = (await ownerLogin.json()).jwtToken;
+    //const ownerJson = await ownerLogin.json();
+    //ownerToken = ownerJson.jwtToken;
+    // --- ADD THIS DEBUGGER ---
+    // console.log("OWNER TOKEN CAPTURED:", ownerJson);
+    expect(ownerToken).toBeDefined();
+
     // 2. Seed diverse properties for testing
     await seedTestProperty({
+      user_id: ownerId,
       title: "Cozy Downtown Loft",
       description: "A great place to live.",
       price: 250000,

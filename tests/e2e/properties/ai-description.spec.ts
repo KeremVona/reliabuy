@@ -75,7 +75,7 @@ test.describe("Property Making - AI Integration Tests", () => {
     await generateBtn.click();
 
     // Verify UI changes to loading state
-    const loadingBtn = page.locator("button", { hasText: "Scanning..." });
+    const loadingBtn = page.locator("button", { hasText: "AI is Writing..." });
     await expect(loadingBtn).toBeVisible();
 
     // PROCEDURE 4: Wait for the backend/Gemini response

@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import path from "path";
 import { pool } from "../../../test-utils/dbCon";
 import fs from "fs";
+import { clearDatabase } from "../../../test-utils/db";
 
 test.describe("Make Property Functional Tests", () => {
   const testEmail = "seller@example.com";
@@ -14,6 +15,11 @@ test.describe("Make Property Functional Tests", () => {
   test.beforeEach(async ({ request }) => {
     // 1. Clean the database
     await pool.query("DELETE FROM users WHERE email = $1", [testEmail]);
+    await pool.query("DELETE FROM favorites");
+    await pool.query("DELETE FROM property_images");
+    await pool.query("DELETE FROM properties");
+    await pool.query("DELETE FROM users");
+    await clearDatabase();
 
     // 2. Insert the test user
     const hashedPassword = await bcrypt.hash(rawPassword, 10);

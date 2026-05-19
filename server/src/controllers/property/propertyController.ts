@@ -98,7 +98,12 @@ export async function getProperty(req: Request, res: Response): Promise<void> {
   try {
     const { id } = req.params;
     const sliced = id.slice(1);
-    const propertyId = parseInt(sliced as string, 10);
+    //let propertyId: number;
+    // const propertyId = parseInt(sliced as string, 10);
+
+    const idStr = Array.isArray(id) ? id[0] : id;
+
+    const propertyId = parseInt(idStr.replace(":", ""), 10);
 
     if (isNaN(propertyId)) {
       res.status(400).json({ error: "Invalid Property ID provided" });
@@ -154,6 +159,7 @@ export async function updateProperty(
     const existingProperty = await propertyService.getPropertyById(propertyId);
 
     if (!existingProperty) {
+      console.log("property not found", propertyId);
       res.status(404).json({ success: false, message: "Property not found" });
       return;
     }
@@ -298,9 +304,9 @@ export const getMyProperties = async (req: Request, res: Response) => {
     // const userId = parseInt(req.user!.id, 10);
 
     const userId = Number(req.user?.id);
-    console.log("userId ", userId);
-    console.log("userId 2 ", req.user?.id);
-    console.log("userId 3 ", parseInt(req.user!.id), 10);
+    // console.log("userId ", userId);
+    // console.log("userId 2 ", req.user?.id);
+    // console.log("userId 3 ", parseInt(req.user!.id), 10);
 
     if (!userId) {
       return res.status(401).json({
@@ -330,8 +336,17 @@ export const saveProperty = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const userId = parseInt(req.user!.id, 10);
+    // const userId = parseInt(req.user!.id, 10);
     const propertyId = parseInt(req.params.id as string, 10);
+    const userId = Number(req.user?.id);
+
+    if (!req.user || isNaN(userId)) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized: User not found in request",
+      });
+      return;
+    }
 
     if (isNaN(propertyId)) {
       res.status(400).json({ success: false, message: "Invalid property ID" });
@@ -364,8 +379,9 @@ export const unsaveProperty = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const userId = parseInt(req.user!.id, 10);
+    // const userId = parseInt(req.user!.id, 10);
     const propertyId = parseInt(req.params.id as string, 10);
+    const userId = Number(req.user?.id);
 
     if (isNaN(propertyId)) {
       res.status(400).json({ success: false, message: "Invalid property ID" });
@@ -388,7 +404,9 @@ export const getMySavedProperties = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const userId = parseInt(req.user!.id, 10);
+    //const userId = parseInt(req.user!.id, 10);
+    const userId = Number(req.user?.id);
+    console.log("userId getMySavedProperties ", userId);
     const savedProperties = await propertyService.getSavedProperties(userId);
 
     res.status(200).json({

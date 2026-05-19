@@ -27,6 +27,7 @@ export const seedTestUser = async (
 ) => {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
+  const normalizedEmail = email.toLowerCase();
 
   const query = `
    INSERT INTO users (fullname, email, password, city)
@@ -37,7 +38,7 @@ export const seedTestUser = async (
   `;
   const result = await pool.query(query, [
     fullname,
-    email,
+    normalizedEmail,
     hashedPassword,
     city,
   ]);

@@ -61,14 +61,17 @@ export const registerHandler = async (
     const validatedData = registerSchema.parse(req.body);
 
     const newUser = await registerUser(validatedData);
+    // console.log(newUser);
 
     if (!newUser) {
+      // console.log("fail ", newUser);
       return res
         .status(400)
         .json({ error: "Registration failed. Please try again." });
     }
-
+    // console.log("before");
     const jwtToken = jwtGenerator(String(newUser.id), newUser.fullname);
+    // console.log("succesful registration ", jwtToken);
 
     // Standardized success response
     return res.status(201).json({
